@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <title>IchPixel - Proドット絵メーカー</title>
+
+    <!-- Google Fonts & Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+    <style>
+        :root {
+            --accent-primary: #3381FF;
+            --accent-active: #1A5FCC;
+            
+            --ptz-theme-name: "IchPixel PTZ";
+            --ptz-card-radius: 24px;
+            --ptz-slider-height: 30px;
+            --ptz-toggle-width: 54px;
+            --ptz-toggle-height: 30px;
+            --ptz-toggle-knob-radius: 50%;
+            --ptz-toggle-knob-width: 22px;
+
+            /* Light Mode ベースカラー */
+            --bg-base: #F7F7F7;
+            --glass-bg: #FFFFFF;
+            --text-main: #000000;
+            --text-sub: #666666;
+            --bg-secondary: #EEEEEE;
+            --nav-bg: #FFFFFF;
+            --nav-icon-active: #000000;
+            
+            --m3-easing: cubic-bezier(0.32, 0.72, 0, 1);
+            --transition-smooth: 0.35s var(--m3-easing);
+            --card-padding: 24px;
+        }
+
+        /* ダークモード */
+        .dark-mode {
+            --bg-base: #121212;
+            --glass-bg: #1E1E1E;
+            --text-main: #FFFFFF;
+            --text-sub: #A1A1A6;
+            --bg-secondary: #2C2C2E;
+            --nav-bg: #1E1E1E;
+            --nav-icon-active: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            transition: background-color var(--transition-smooth), color var(--transition-smooth);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #app-viewport {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--glass-bg);
+            transition: background-color var(--transition-smooth);
+            position: relative;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background var(--transition-smooth), transform 0.2s;
+        }
+        .theme-toggle:active {
+            transform: scale(0.9);
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 20px 160px;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            border-radius: var(--ptz-card-radius);
+            padding: var(--card-padding);
+            margin-bottom: 20px;
+            box-shadow: none !important;
+            border: none !important;
+            transition: background-color var(--transition-smooth), border-radius var(--transition-smooth);
+        }
+
+        h2 { 
+            font-size: 18px; 
+            margin-top: 0; 
+            margin-bottom: 12px;
+            font-weight: 700; 
+            letter-spacing: -0.3px;
+        }
+        p {
+            font-size: 13.5px;
+            line-height: 1.5;
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: var(--text-sub);
+        }
+
+        /* 厚口スライダー */
+        .thick-slider-wrapper {
+            margin: 10px 0;
+        }
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .thick-slider-container {
+            position: relative;
+            width: 100%;
+            height: var(--ptz-slider-height);
+            background: var(--bg-secondary);
+            border-radius: calc(var(--ptz-slider-height) / 2);
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .thick-slider-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            background: var(--accent-primary);
+            border-radius: calc(var(--ptz-slider-height) / 2);
+            transition: background-color var(--transition-smooth);
+            pointer-events: none;
+        }
+        .thick-slider-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            pointer-events: none;
+            z-index: 2;
+            letter-spacing: 0.5px;
+        }
+        .thick-slider-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            margin: 0;
+            z-index: 3;
+        }
+
+        .shape-selector-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .shape-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 12px;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .shape-btn.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .custom-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 16px;
+        }
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 4px;
+            border-bottom: 1px solid var(--bg-secondary);
+        }
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        .list-item-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .list-item-desc {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .ai-btn {
+            border: none;
+            outline: none;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 14px;
+            color: white;
+            cursor: pointer;
+            background: var(--accent-primary);
+            transition: transform 0.2s, background-color var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .ai-btn:hover {
+            transform: scale(1.02);
+        }
+        .ai-btn:active {
+            background: var(--accent-active);
+            transform: scale(0.96);
+        }
+        .ai-btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-main);
+        }
+
+        .glass-input-wrapper {
+            margin-bottom: 14px;
+        }
+        .glass-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: background var(--transition-smooth);
+        }
+        .glass-input:focus {
+            outline: 2px solid var(--accent-primary);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: var(--ptz-toggle-width);
+            height: var(--ptz-toggle-height);
+            transition: width var(--transition-smooth), height var(--transition-smooth);
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-secondary);
+            transition: var(--transition-smooth);
+            border-radius: calc(var(--ptz-toggle-height) / 2);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: var(--ptz-toggle-knob-width);
+            width: var(--ptz-toggle-knob-width);
+            left: 4px;
+            bottom: calc((var(--ptz-toggle-height) - var(--ptz-toggle-knob-width)) / 2);
+            background: white;
+            transition: var(--transition-smooth);
+            border-radius: var(--ptz-toggle-knob-radius);
+        }
+        input:checked + .slider {
+            background: var(--accent-primary);
+        }
+        input:checked + .slider:before {
+            transform: translateX(calc(var(--ptz-toggle-width) - var(--ptz-toggle-knob-width) - 8px));
+        }
+
+        .bottom-nav-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 72px;
+            background: var(--nav-bg);
+            border-top: 1px solid var(--bg-secondary);
+            z-index: 500;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+            transition: background-color var(--transition-smooth), border-color var(--transition-smooth);
+        }
+        .nav-item {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-sub);
+            transition: color 0.25s var(--m3-easing);
+            position: relative;
+            gap: 4px;
+        }
+        .nav-item span.material-symbols-outlined {
+            font-size: 24px;
+            font-variation-settings: 'FILL' 0, 'wght' 400;
+            transition: font-variation-settings 0.2s, color 0.2s;
+        }
+        .nav-label {
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .nav-item.active {
+            color: var(--nav-icon-active);
+        }
+        .nav-item.active span.material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 700;
+        }
+
+        /* 全面写真形式 PolandballPark バナー */
+        .free-park-banner-wrapper {
+            position: fixed;
+            bottom: 72px;
+            left: 0;
+            width: 100%;
+            z-index: 490;
+            padding: 6px 12px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+        .free-park-banner-photo {
+            width: 100%;
+            max-width: 780px;
+            height: 52px;
+            margin: 0 auto;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+            display: block;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .free-park-banner-photo:active {
+            transform: scale(0.98);
+        }
+        .free-park-banner-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .free-park-banner-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.5) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            color: #FFFFFF;
+        }
+        .free-park-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: block;
+            animation: viewIn 0.3s var(--m3-easing);
+        }
+        @keyframes viewIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .canvas-workspace {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: var(--bg-secondary);
+            border-radius: var(--ptz-card-radius);
+            overflow: hidden;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .canvas-container {
+            position: absolute;
+            transform-origin: center center;
+            cursor: crosshair;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+        #gridCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        #overlayCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .tool-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+            margin-bottom: 14px;
+        }
+        .tool-btn {
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            border: none;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .tool-btn.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+        .tool-btn:active {
+            transform: scale(0.95);
+        }
+
+        .palette-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 6px 0;
+        }
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        .color-swatch.active::after {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border: 2px solid var(--accent-primary);
+            border-radius: 50%;
+        }
+
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .library-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 12px;
+            text-align: center;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .library-preview {
+            width: 100%;
+            height: 100px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            background: #fff;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .library-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 8px;
+        }
+        .library-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .badge {
+            background: var(--accent-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .badge-pro {
+            background: linear-gradient(135deg, #FF9500, #FF2D55);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--text-main);
+            color: var(--glass-bg);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s var(--m3-easing);
+            z-index: 2000;
+        }
+        .toast.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dialog-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.3s var(--m3-easing);
+        }
+        .dialog-overlay.active { opacity: 1; visibility: visible; }
+        .glass-dialog {
+            background: var(--glass-bg);
+            border-radius: var(--ptz-card-radius);
+            padding: 24px; max-width: 440px; width: 90%; text-align: center;
+            transform: scale(0.9) translateY(20px); transition: all 0.4s var(--m3-easing);
+            max-height: 90vh; overflow-y: auto;
+        }
+        .dialog-overlay.active .glass-dialog { transform: scale(1) translateY(0); }
+
+        @keyframes squishy {
+            0% { transform: scale(1, 1); }
+            30% { transform: scale(1.06, 0.94); }
+            50% { transform: scale(0.97, 1.03); }
+            70% { transform: scale(1.01, 0.99); }
+            100% { transform: scale(1, 1); }
+        }
+        .squish-active {
+            animation: squishy 0.35s var(--m3-easing);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-viewport">
+        <!-- ヘッダー -->
+        <header>
+            <div class="header-brand">
+                <img src="https://raw.githubusercontent.com/PolandBallHub-Operator/pbimagesPublic/refs/heads/main/newballs/germany/frontnormal.png" alt="IchPixel Icon" class="app-icon">
+                <div class="logo">IchPixel</div>
+                <span class="badge" id="user-status-badge">FREE</span>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="pro-unlock-btn" title="プロコード入力" onclick="openProCodeDialog()">
+                    <span class="material-symbols-outlined">key</span>
+                </button>
+                <button class="theme-toggle" id="theme-btn" title="テーマ切り替え">
+                    <span class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- メインコンテンツ -->
+        <main>
+            <!-- 1. ホームビュー -->
+            <section id="view-home" class="view active">
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="badge badge-pro" id="home-pro-status">Pro機能ロック中</span>
+                        <span style="font-size: 11px; color: var(--text-sub);">Version 2.9 Pro</span>
+                    </div>
+                    <h2>Proドット絵メーカー 「IchPixel」</h2>
+                    <p>
+                        モバイル操作に完全最適化されたプロフェッショナル向けドット絵エディタ。ドット絵の書き出し・ダウンロード、ペン太さ調整、形式・サイズ変更可能なPro解像度エクスポート機能を完備。
+                    </p>
+                    <div style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="ai-btn" onclick="openNewCanvasDialog()">
+                            <span class="material-symbols-outlined">add_box</span>
+                            新規キャンバス作成
+                        </button>
+                        <button class="ai-btn ai-btn-secondary" onclick="openProCodeDialog()">
+                            <span class="material-symbols-outlined">stars</span>
+                            FanUnlock (プロコード)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h2>クイックキャンバス設定</h2>
+                    <p>サイズを指定してドット絵制作を開始します（上限 8000 x 8000px）。</p>
+                    
+                    <div class="custom-list">
+                        <div class="list-item">
+                            <div>
+                                <div class="list-item-title">標準 32 x 32</div>
+                                <div class="list-item-desc">アイコンやキャラドット向け</div>
+                            </div>
+                            <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="createCanvas(32, 32)">作成</button>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <div class="list-item-title">高解像度 128 x 128</div>
+                                <div class="list-item-desc">詳細イラスト向け</div>
+                            </div>
+                            <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="createCanvas(128, 128)">作成</button>
+                        </div>
+                        <div class="list-item">
+                            <div>
+                                <div class="list-item-title">巨大 2000 x 2000 以上</div>
+                                <div class="list-item-desc">Pro限定の高解像度キャンバス</div>
+                            </div>
+                            <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="checkProCanvasRequirement()">プロ仕様</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h2>画像をインポート</h2>
+                    <p>既存の画像をドット絵キャンバスに読み込んで編集できます。</p>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="ai-btn ai-btn-secondary" onclick="triggerImageImport('resize')">
+                            <span class="material-symbols-outlined">compress</span>
+                            縮小インポート
+                        </button>
+                        <button class="ai-btn ai-btn-secondary" onclick="triggerImageImport('original')">
+                            <span class="material-symbols-outlined">aspect_ratio</span>
+                            原寸サイズでインポート (Pro)
+                        </button>
+                    </div>
+                    <input type="file" id="image-import-input" accept="image/*" style="display: none;" onchange="handleImageFileSelect(event)">
+                </div>
+            </section>
+
+            <!-- 2. キャンバス描画ビュー -->
+            <section id="view-canvas" class="view">
+                <div class="glass-card" style="padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <span style="font-weight: 700; font-size: 14px;" id="canvas-size-indicator">32 x 32 px</span>
+                            <span style="font-size: 12px; color: var(--text-sub); margin-left: 8px;" id="zoom-level-text">ズーム: 100%</span>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="tool-btn" style="padding: 6px 10px;" onclick="downloadCanvasDirectly()" title="ダウンロード (Free)">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                                ダウンロード
+                            </button>
+                            <button class="tool-btn" style="padding: 6px 10px;" onclick="resetCanvasTransform()" title="ビューリセット">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">center_focus_strong</span>
+                            </button>
+                            <button class="tool-btn" style="padding: 6px 10px; background: var(--accent-primary); color: white;" onclick="saveCurrentCanvasToLibrary()" title="ライブラリ保存">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+                                保存
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 拡大スライダー -->
+                    <div class="thick-slider-wrapper">
+                        <div class="slider-label-row">
+                            <span><span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">zoom_in</span> 拡大スライダー</span>
+                        </div>
+                        <div class="thick-slider-container">
+                            <div class="thick-slider-fill" id="zoom-slider-fill" style="width: 10%;"></div>
+                            <div class="thick-slider-text" id="zoom-slider-val">拡大率: 100%</div>
+                            <input type="range" class="thick-slider-input" id="zoom-slider-input" min="50" max="3000" value="100" oninput="handleZoomSliderChange(this.value)">
+                        </div>
+                    </div>
+
+                    <!-- キャンバスワークスペース -->
+                    <div class="canvas-workspace" id="workspace">
+                        <div class="canvas-container" id="canvas-container">
+                            <canvas id="mainCanvas" width="32" height="32"></canvas>
+                            <canvas id="overlayCanvas" width="32" height="32"></canvas>
+                            <canvas id="gridCanvas" width="32" height="32"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 描画ツールバー -->
+                    <div class="tool-bar">
+                        <button class="tool-btn active" id="tool-pen" onclick="setTool('pen')">
+                            <span class="material-symbols-outlined">edit</span> ペン
+                        </button>
+                        <button class="tool-btn" id="tool-eraser" onclick="setTool('eraser')">
+                            <span class="material-symbols-outlined">ink_eraser</span> 消しゴム
+                        </button>
+                        <button class="tool-btn" id="tool-bucket" onclick="setTool('bucket')">
+                            <span class="material-symbols-outlined">format_color_fill</span> バケツ
+                        </button>
+                        <button class="tool-btn" id="tool-picker" onclick="setTool('picker')">
+                            <span class="material-symbols-outlined">colorize</span> スポイト
+                        </button>
+                        <button class="tool-btn" id="tool-replace" onclick="triggerColorReplace()">
+                            <span class="material-symbols-outlined">find_replace</span> 色一括置換 (Pro)
+                        </button>
+                    </div>
+
+                    <!-- ブラシ＆消しゴム設定 -->
+                    <div style="background: var(--bg-secondary); border-radius: 16px; padding: 12px; margin-top: 10px;">
+                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-primary);">tune</span>
+                            プロ向け ブラシ＆消しゴム設定
+                        </div>
+
+                        <!-- 線の太さ調整 -->
+                        <div class="thick-slider-wrapper" id="pen-size-control">
+                            <div class="slider-label-row">
+                                <span>線の太さ（ペンサイズ）</span>
+                                <span id="pen-size-display">1 px</span>
+                            </div>
+                            <div class="thick-slider-container">
+                                <div class="thick-slider-fill" id="pen-size-fill" style="width: 0%;"></div>
+                                <div class="thick-slider-text" id="pen-size-text">ペンサイズ: 1 px</div>
+                                <input type="range" class="thick-slider-input" id="pen-size-input" min="1" max="32" value="1" oninput="updatePenSize(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- 消しゴムの太さ調整 -->
+                        <div class="thick-slider-wrapper" id="eraser-size-control">
+                            <div class="slider-label-row">
+                                <span>消しゴムの太さ</span>
+                                <span id="eraser-size-display">1 px</span>
+                            </div>
+                            <div class="thick-slider-container">
+                                <div class="thick-slider-fill" id="eraser-size-fill" style="width: 0%;"></div>
+                                <div class="thick-slider-text" id="eraser-size-text">消しゴムサイズ: 1 px</div>
+                                <input type="range" class="thick-slider-input" id="eraser-size-input" min="1" max="32" value="1" oninput="updateEraserSize(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- ペンの形調整 -->
+                        <div style="margin-top: 10px;">
+                            <div style="font-size: 12px; font-weight: 600; color: var(--text-sub);">ペンの形状</div>
+                            <div class="shape-selector-group">
+                                <button class="shape-btn active" id="shape-square" onclick="setPenShape('square')">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">square</span>
+                                    正方形 (Square)
+                                </button>
+                                <button class="shape-btn" id="shape-circle" onclick="setPenShape('circle')">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">circle</span>
+                                    円形 (Circle)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- カラーパレット -->
+                    <div style="margin-top: 12px;">
+                        <div style="font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-sub);">カラーパレット</div>
+                        <div class="palette-container" id="palette-list"></div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                            <input type="color" id="native-color-picker" value="#000000" onchange="addColorFromPicker(this.value)" style="width: 36px; height: 36px; border: none; background: none; cursor: pointer;">
+                            <span style="font-size: 12px; color: var(--text-sub);">色を選択してパレットに追加</span>
+                        </div>
+                    </div>
+
+                    <!-- グリッド表示 -->
+                    <div style="margin-top: 14px; border-top: 1px solid var(--bg-secondary); padding-top: 10px;">
+                        <div class="toggle-row" style="padding: 4px 0; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div class="list-item-title">ドット線（1pxマス目格子）</div>
+                                <div class="list-item-desc">キャンバスの背景に1ピクセルの網目を表示</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="grid-toggle" checked onchange="toggleGrid(this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 画像重ね配置 -->
+                    <div style="margin-top: 10px;" id="overlay-tool-section">
+                        <button class="ai-btn ai-btn-secondary" style="width: 100%; justify-content: center;" onclick="triggerOverlayImageImport()">
+                            <span class="material-symbols-outlined">layers</span>
+                            ドット絵に画像を直接重ね配置 (Pro)
+                        </button>
+                        <input type="file" id="overlay-import-input" accept="image/*" style="display: none;" onchange="handleOverlayImageSelect(event)">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 作品ライブラリビュー -->
+            <section id="view-library" class="view">
+                <div id="library-pr-card" class="glass-card">
+                    <div style="text-align: center; padding: 12px 0;">
+                        <span class="material-symbols-outlined" style="font-size: 56px; color: #FF9500; margin-bottom: 8px;">star</span>
+                        <h2>プロのように楽しみましょう！</h2>
+                        <p style="max-width: 460px; margin: 0 auto 20px;">
+                            Proを有効化すると、作品の無限保存、巨大解像度でのプロエクスポート（拡大・倍率指定・高品質ダウンロード）などの機能が解放されます。
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px; margin: 0 auto;">
+                            <button class="ai-btn" onclick="openProCodeDialog()">
+                                <span class="material-symbols-outlined">key</span>
+                                プロコードを入力して解放
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="library-main-content" class="glass-card" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h2>作品ライブラリ</h2>
+                        <button class="ai-btn" style="padding: 8px 14px;" onclick="openNewCanvasDialog()">
+                            <span class="material-symbols-outlined">add</span> 新規作成
+                        </button>
+                    </div>
+                    <p>保存された作品の一覧です。ダウンロード・再編集が可能です。</p>
+                    
+                    <div class="library-grid" id="library-items-container"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- PolandballParkプロモーションバナー（写真形式・ポランドボールURLリンク） -->
+        <div id="free-park-banner" class="free-park-banner-wrapper">
+            <a href="https://polandball.s.gy" target="_blank" class="free-park-banner-photo">
+                <img src="https://raw.githubusercontent.com/PolandBallHub-Operator/pbpark/refs/heads/main/osapps/weather/banner.png" alt="Polandball Banner Photo" onerror="this.src='https://placehold.co/800x120/1a1a2e/ffffff?text=PolandballPark'">
+                <div class="free-park-banner-overlay">
+                    <div class="free-park-title">
+                        <span class="material-symbols-outlined" style="font-size: 20px; color: #FFD700;">photo_camera</span>
+                        PolandballParkへ行こう！
+                    </div>
+                    <span class="material-symbols-outlined" style="font-size: 20px;">open_in_new</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 下付き固定ナビゲーションバー -->
+        <div class="bottom-nav-container">
+            <div class="nav-item active" data-view="view-home" onclick="switchView('view-home')">
+                <span class="material-symbols-outlined">home</span>
+                <span class="nav-label">ホーム</span>
+            </div>
+            <div class="nav-item" data-view="view-canvas" onclick="switchView('view-canvas')">
+                <span class="material-symbols-outlined">draw</span>
+                <span class="nav-label">キャンバス</span>
+            </div>
+            <div class="nav-item" data-view="view-library" onclick="switchView('view-library')">
+                <span class="material-symbols-outlined">photo_library</span>
+                <span class="nav-label">ライブラリ</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- プロコード入力ダイアログ -->
+    <div class="dialog-overlay" id="pro-code-dialog">
+        <div class="glass-dialog">
+            <span class="material-symbols-outlined" style="font-size: 44px; color: var(--accent-primary);">lock_open</span>
+            <h2 style="margin-top: 10px;">プロコード入力</h2>
+            <p>FanUnlock招待コードを入力して、Proプロフェッショナル機能を解除します。</p>
+            <div class="glass-input-wrapper">
+                <input type="text" class="glass-input" id="pro-code-input" placeholder="プロコードを入力..." autocomplete="off">
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <button class="ai-btn ai-btn-secondary" style="flex: 1;" onclick="closeDialog('pro-code-dialog')">キャンセル</button>
+                <button class="ai-btn" style="flex: 1;" onclick="submitProCode()">認証</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新規キャンバス作成ダイアログ -->
+    <div class="dialog-overlay" id="new-canvas-dialog">
+        <div class="glass-dialog">
+            <span class="material-symbols-outlined" style="font-size: 44px; color: var(--accent-primary);">aspect_ratio</span>
+            <h2 style="margin-top: 10px;">キャンバスサイズ指定</h2>
+            <p>幅と高さを指定（最大 8000 x 8000）。<br>2000 x 2000 以上は Pro 権限が必要です。</p>
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <input type="number" class="glass-input" id="canvas-width-input" value="64" min="8" max="8000" placeholder="幅">
+                <input type="number" class="glass-input" id="canvas-height-input" value="64" min="8" max="8000" placeholder="高さ">
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <button class="ai-btn ai-btn-secondary" style="flex: 1;" onclick="closeDialog('new-canvas-dialog')">キャンセル</button>
+                <button class="ai-btn" style="flex: 1;" onclick="submitCustomCanvasSize()">作成</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- プロ向けライブラリダウンロード（サイズ・拡大倍率・画質指定）ダイアログ -->
+    <div class="dialog-overlay" id="pro-download-dialog">
+        <div class="glass-dialog">
+            <span class="material-symbols-outlined" style="font-size: 44px; color: var(--accent-primary);">download_for_offline</span>
+            <h2 style="margin-top: 10px;">Pro 高画質エクスポート</h2>
+            <p>作品を自由な倍率・カスタム解像度・補間方式で書き出します。</p>
+            
+            <div style="text-align: left; margin-bottom: 16px;">
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-sub); display: block; margin-bottom: 4px;">拡大倍率（スケール）</label>
+                <select class="glass-input" id="export-scale-select" onchange="onExportScaleChange(this.value)">
+                    <option value="1">1倍 (等倍ドット)</option>
+                    <option value="2">2倍</option>
+                    <option value="4" selected>4倍 (標準拡大)</option>
+                    <option value="8">8倍 (高画質)</option>
+                    <option value="16">16倍 (超高解像度)</option>
+                    <option value="32">32倍 (巨大ポスターサイズ)</option>
+                    <option value="custom">カスタムピクセル指定</option>
+                </select>
+
+                <div id="export-custom-size-box" style="display: none; margin-top: 10px; gap: 8px;">
+                    <div style="flex: 1;">
+                        <span style="font-size: 11px;">幅 (px)</span>
+                        <input type="number" class="glass-input" id="export-custom-w" value="512">
+                    </div>
+                    <div style="flex: 1;">
+                        <span style="font-size: 11px;">高さ (px)</span>
+                        <input type="number" class="glass-input" id="export-custom-h" value="512">
+                    </div>
+                </div>
+
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-sub); display: block; margin-top: 12px; margin-bottom: 4px;">補間（ドットの質感）</label>
+                <select class="glass-input" id="export-smoothing-select">
+                    <option value="pixelated">くっきりピクセル補間 (推奨: ドット絵)</option>
+                    <option value="smooth">なめらか補間 (スムース)</option>
+                </select>
+
+                <label style="font-size: 12px; font-weight: 700; color: var(--text-sub); display: block; margin-top: 12px; margin-bottom: 4px;">ファイル形式</label>
+                <select class="glass-input" id="export-format-select">
+                    <option value="image/png">PNG (透過・高画質)</option>
+                    <option value="image/jpeg">JPEG (軽量)</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <button class="ai-btn ai-btn-secondary" style="flex: 1;" onclick="closeDialog('pro-download-dialog')">キャンセル</button>
+                <button class="ai-btn" style="flex: 1;" onclick="executeProDownload()">ダウンロード実行</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 色一括置換ダイアログ -->
+    <div class="dialog-overlay" id="color-replace-dialog">
+        <div class="glass-dialog">
+            <span class="material-symbols-outlined" style="font-size: 44px; color: var(--accent-primary);">find_replace</span>
+            <h2 style="margin-top: 10px;">特定の色を全置換 (Pro)</h2>
+            <p>置換元の色と、新しい置換後の色を選択してください。</p>
+            <div style="display: flex; justify-content: space-around; align-items: center; margin: 16px 0;">
+                <div>
+                    <div style="font-size: 11px; margin-bottom: 4px;">変更前の色</div>
+                    <input type="color" id="replace-from-color" value="#000000" style="width: 48px; height: 48px; border: none; background: none; cursor: pointer;">
+                </div>
+                <span class="material-symbols-outlined">arrow_forward</span>
+                <div>
+                    <div style="font-size: 11px; margin-bottom: 4px;">変更後の色</div>
+                    <input type="color" id="replace-to-color" value="#3381FF" style="width: 48px; height: 48px; border: none; background: none; cursor: pointer;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <button class="ai-btn ai-btn-secondary" style="flex: 1;" onclick="closeDialog('color-replace-dialog')">キャンセル</button>
+                <button class="ai-btn" style="flex: 1;" onclick="executeColorReplace()">置換実行</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- トースト通知 -->
+    <div class="toast" id="toast-message">メッセージ</div>
+
+    <script>
+        /**
+         * IchPixel Pro Pixel Art Application - Core Script
+         */
+
+        // アプリケーション状態
+        let isProUser = false;
+        let currentTool = 'pen';
+        let currentColor = '#000000';
+        let paletteColors = ['#000000', '#FFFFFF', '#3381FF', '#FF3B30', '#34C759', '#FF9500', '#AF52DE'];
+        let showGrid = true;
+
+        // ペン・消しゴム設定
+        let penSize = 1;
+        let eraserSize = 1;
+        let penShape = 'square';
+
+        // キャンバス状態
+        let canvasWidth = 32;
+        let canvasHeight = 32;
+        let transformScale = 1;
+        let transformPanX = 0;
+        let transformPanY = 0;
+        let transformRotation = 0;
+
+        // オーバーレイ
+        let overlayImage = null;
+        let overlayX = 0;
+        let overlayY = 0;
+
+        // DB & エクスポート対話用ターゲット
+        let dbInstance = null;
+        let targetArtworkForExport = null;
+
+        // DOM参照
+        const mainCanvas = document.getElementById('mainCanvas');
+        const mainCtx = mainCanvas.getContext('2d', { willReadFrequently: true });
+        const gridCanvas = document.getElementById('gridCanvas');
+        const gridCtx = gridCanvas.getContext('2d');
+        const overlayCanvas = document.getElementById('overlayCanvas');
+        const overlayCtx = overlayCanvas.getContext('2d');
+        const canvasContainer = document.getElementById('canvas-container');
+        const workspace = document.getElementById('workspace');
+
+        // IndexedDB 初期化
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('IchPixelDB', 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('artworks')) {
+                        db.createObjectStore('artworks', { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = (e) => {
+                    dbInstance = e.target.result;
+                    resolve(dbInstance);
+                };
+                request.onerror = (e) => reject(e);
+            });
+        }
+
+        // サンプル作品生成
+        async function seedSampleArtwork() {
+            if (!dbInstance) return;
+            const tx = dbInstance.transaction('artworks', 'readonly');
+            const store = tx.objectStore('artworks');
+            const getReq = store.get('sample-germanyball');
+            
+            getReq.onsuccess = () => {
+                if (!getReq.result) {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.onload = () => {
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = 32;
+                        tempCanvas.height = 32;
+                        const tCtx = tempCanvas.getContext('2d');
+                        tCtx.drawImage(img, 0, 0, 32, 32);
+                        const dataUrl = tempCanvas.toDataURL();
+
+                        const sampleDoc = {
+                            id: 'sample-germanyball',
+                            title: 'ドイツボール (Sample)',
+                            width: 32,
+                            height: 32,
+                            dataUrl: dataUrl,
+                            updatedAt: Date.now()
+                        };
+
+                        const writeTx = dbInstance.transaction('artworks', 'readwrite');
+                        writeTx.objectStore('artworks').put(sampleDoc);
+                        writeTx.oncomplete = () => loadLibraryItems();
+                    };
+                    img.src = 'https://raw.githubusercontent.com/PolandBallHub-Operator/pbimagesPublic/refs/heads/main/newballs/germany/frontnormal.png';
+                } else {
+                    loadLibraryItems();
+                }
+            };
+        }
+
+        function checkPersistentProStatus() {
+            const saved = localStorage.getItem('ichpixel_pro_unlocked');
+            if (saved === 'true') {
+                isProUser = true;
+            }
+            updateProUIState();
+        }
+
+        function updateProUIState() {
+            const userBadge = document.getElementById('user-status-badge');
+            const homeProBadge = document.getElementById('home-pro-status');
+            const freeBanner = document.getElementById('free-park-banner');
+            const libraryPR = document.getElementById('library-pr-card');
+            const libraryMain = document.getElementById('library-main-content');
+
+            if (isProUser) {
+                userBadge.textContent = 'PRO';
+                userBadge.classList.add('badge-pro');
+                homeProBadge.textContent = 'Pro機能 有効';
+                homeProBadge.classList.add('badge-pro');
+                freeBanner.style.display = 'none';
+                libraryPR.style.display = 'none';
+                libraryMain.style.display = 'block';
+                loadLibraryItems();
+            } else {
+                userBadge.textContent = 'FREE';
+                userBadge.classList.remove('badge-pro');
+                homeProBadge.textContent = 'Pro機能 ロック中';
+                homeProBadge.classList.remove('badge-pro');
+                freeBanner.style.display = 'block';
+                libraryPR.style.display = 'block';
+                libraryMain.style.display = 'none';
+            }
+        }
+
+        function submitProCode() {
+            const input = document.getElementById('pro-code-input').value.trim();
+            if (input.toLowerCase() === 'polandball') {
+                isProUser = true;
+                localStorage.setItem('ichpixel_pro_unlocked', 'true');
+                updateProUIState();
+                closeDialog('pro-code-dialog');
+                showToast('Pro機能（FanUnlock）が完全解放されました！');
+            } else {
+                showToast('無効なプロコードです');
+            }
+        }
+
+        function createCanvas(w, h) {
+            if ((w >= 2000 || h >= 2000) && !isProUser) {
+                showToast('2000x2000以上のキャンバス作成にはProが必要です');
+                openProCodeDialog();
+                return;
+            }
+            canvasWidth = Math.min(w, 8000);
+            canvasHeight = Math.min(h, 8000);
+
+            mainCanvas.width = canvasWidth;
+            mainCanvas.height = canvasHeight;
+            gridCanvas.width = canvasWidth;
+            gridCanvas.height = canvasHeight;
+            overlayCanvas.width = canvasWidth;
+            overlayCanvas.height = canvasHeight;
+
+            mainCtx.fillStyle = '#FFFFFF';
+            mainCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            document.getElementById('canvas-size-indicator').textContent = `${canvasWidth} x ${canvasHeight} px`;
+            
+            drawGrid();
+            resetCanvasTransform();
+            switchView('view-canvas');
+        }
+
+        function checkProCanvasRequirement() {
+            if (!isProUser) {
+                showToast('巨大キャンバス作成にはPro権限が必要です');
+                openProCodeDialog();
+            } else {
+                openNewCanvasDialog();
+            }
+        }
+
+        function drawGrid() {
+            gridCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            if (!showGrid) return;
+
+            gridCtx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
+            gridCtx.lineWidth = 0.5;
+
+            gridCtx.beginPath();
+            for (let x = 0; x <= canvasWidth; x++) {
+                gridCtx.moveTo(x, 0);
+                gridCtx.lineTo(x, canvasHeight);
+            }
+            for (let y = 0; y <= canvasHeight; y++) {
+                gridCtx.moveTo(0, y);
+                gridCtx.lineTo(canvasWidth, y);
+            }
+            gridCtx.stroke();
+        }
+
+        function toggleGrid(enabled) {
+            showGrid = enabled;
+            drawGrid();
+        }
+
+        function resetCanvasTransform() {
+            transformScale = Math.min(300 / canvasWidth, 300 / canvasHeight);
+            if (transformScale < 0.5) transformScale = 0.5;
+            transformPanX = 0;
+            transformPanY = 0;
+            transformRotation = 0;
+            applyCanvasTransform();
+            syncZoomSliderUI();
+        }
+
+        function applyCanvasTransform() {
+            canvasContainer.style.transform = `translate(${transformPanX}px, ${transformPanY}px) scale(${transformScale}) rotate(${transformRotation}deg)`;
+            syncZoomSliderUI();
+        }
+
+        function syncZoomSliderUI() {
+            const zoomPercent = Math.round(transformScale * 100);
+            const sliderInput = document.getElementById('zoom-slider-input');
+            const sliderFill = document.getElementById('zoom-slider-fill');
+            const sliderValText = document.getElementById('zoom-slider-val');
+            const zoomText = document.getElementById('zoom-level-text');
+
+            if (sliderInput) sliderInput.value = zoomPercent;
+            if (zoomText) zoomText.textContent = `ズーム: ${zoomPercent}%`;
+            if (sliderValText) sliderValText.textContent = `拡大率: ${zoomPercent}%`;
+
+            if (sliderFill && sliderInput) {
+                const min = parseFloat(sliderInput.min) || 50;
+                const max = parseFloat(sliderInput.max) || 3000;
+                const percent = Math.min(Math.max(((zoomPercent - min) / (max - min)) * 100, 0), 100);
+                sliderFill.style.width = `${percent}%`;
+            }
+        }
+
+        function handleZoomSliderChange(val) {
+            const numVal = parseFloat(val);
+            if (!isProUser && numVal > 2500) {
+                showToast('超高倍率ズーム（2500%〜）はPro限定です');
+                openProCodeDialog();
+                return;
+            }
+            transformScale = numVal / 100;
+            applyCanvasTransform();
+        }
+
+        let isDrawing = false;
+        let isPanning = false;
+        let startPanX = 0, startPanY = 0;
+
+        function getCanvasPixelCoords(e) {
+            const rect = mainCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const scaleX = canvasWidth / rect.width;
+            const scaleY = canvasHeight / rect.height;
+
+            const x = Math.floor((clientX - rect.left) * scaleX);
+            const y = Math.floor((clientY - rect.top) * scaleY);
+            return { x, y };
+        }
+
+        function handlePointerDown(e) {
+            if (e.touches && e.touches.length > 1) {
+                isPanning = true;
+                startPanX = e.touches[0].clientX - transformPanX;
+                startPanY = e.touches[0].clientY - transformPanY;
+                return;
+            }
+
+            const { x, y } = getCanvasPixelCoords(e);
+            if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
+                isDrawing = true;
+                applyTool(x, y);
+            }
+        }
+
+        function handlePointerMove(e) {
+            if (isPanning && e.touches && e.touches.length > 1) {
+                transformPanX = e.touches[0].clientX - startPanX;
+                transformPanY = e.touches[0].clientY - startPanY;
+                applyCanvasTransform();
+                return;
+            }
+
+            if (!isDrawing) return;
+            const { x, y } = getCanvasPixelCoords(e);
+            if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
+                applyTool(x, y);
+            }
+        }
+
+        function handlePointerUp() {
+            isDrawing = false;
+            isPanning = false;
+        }
+
+        workspace.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+            let newScale = transformScale * zoomFactor;
+
+            if (!isProUser && newScale > 25) {
+                showToast('これ以上の拡大はPro限定です');
+                return;
+            }
+
+            transformScale = newScale;
+            applyCanvasTransform();
+        }, { passive: false });
+
+        workspace.addEventListener('mousedown', handlePointerDown);
+        window.addEventListener('mousemove', handlePointerMove);
+        window.addEventListener('mouseup', handlePointerUp);
+
+        workspace.addEventListener('touchstart', handlePointerDown, { passive: true });
+        workspace.addEventListener('touchmove', handlePointerMove, { passive: true });
+        workspace.addEventListener('touchend', handlePointerUp);
+
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-bar .tool-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`tool-${tool}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const penControl = document.getElementById('pen-size-control');
+            const eraserControl = document.getElementById('eraser-size-control');
+
+            if (tool === 'pen') {
+                penControl.style.display = 'block';
+                eraserControl.style.display = 'none';
+            } else if (tool === 'eraser') {
+                penControl.style.display = 'none';
+                eraserControl.style.display = 'block';
+            }
+        }
+
+        function updatePenSize(val) {
+            penSize = parseInt(val);
+            document.getElementById('pen-size-display').textContent = `${penSize} px`;
+            document.getElementById('pen-size-text').textContent = `ペンサイズ: ${penSize} px`;
+
+            const fill = document.getElementById('pen-size-fill');
+            const input = document.getElementById('pen-size-input');
+            const percent = ((penSize - 1) / (parseInt(input.max) - 1)) * 100;
+            fill.style.width = `${percent}%`;
+        }
+
+        function updateEraserSize(val) {
+            eraserSize = parseInt(val);
+            document.getElementById('eraser-size-display').textContent = `${eraserSize} px`;
+            document.getElementById('eraser-size-text').textContent = `消しゴムサイズ: ${eraserSize} px`;
+
+            const fill = document.getElementById('eraser-size-fill');
+            const input = document.getElementById('eraser-size-input');
+            const percent = ((eraserSize - 1) / (parseInt(input.max) - 1)) * 100;
+            fill.style.width = `${percent}%`;
+        }
+
+        function setPenShape(shape) {
+            penShape = shape;
+            document.getElementById('shape-square').classList.toggle('active', shape === 'square');
+            document.getElementById('shape-circle').classList.toggle('active', shape === 'circle');
+        }
+
+        function drawBrushStroke(cx, cy, size, color, shape) {
+            mainCtx.fillStyle = color;
+            const half = Math.floor((size - 1) / 2);
+            const startX = cx - half;
+            const startY = cy - half;
+            const radius = size / 2;
+
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const px = startX + i;
+                    const py = startY + j;
+
+                    if (px >= 0 && px < canvasWidth && py >= 0 && py < canvasHeight) {
+                        if (shape === 'circle' && size > 2) {
+                            const dx = i - half;
+                            const dy = j - half;
+                            if (dx * dx + dy * dy <= radius * radius) {
+                                mainCtx.fillRect(px, py, 1, 1);
+                            }
+                        } else {
+                            mainCtx.fillRect(px, py, 1, 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        function applyTool(x, y) {
+            if (currentTool === 'pen') {
+                drawBrushStroke(x, y, penSize, currentColor, penShape);
+            } else if (currentTool === 'eraser') {
+                drawBrushStroke(x, y, eraserSize, '#FFFFFF', penShape);
+            } else if (currentTool === 'bucket') {
+                floodFill(x, y, currentColor);
+            } else if (currentTool === 'picker') {
+                const pixel = mainCtx.getImageData(x, y, 1, 1).data;
+                const hex = "#" + ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1);
+                currentColor = hex;
+                addColorToPalette(hex);
+                setTool('pen');
+                showToast(`色を取得しました: ${hex}`);
+            }
+        }
+
+        function floodFill(startX, startY, fillColor) {
+            const imgData = mainCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+            const data = imgData.data;
+
+            const targetPos = (startY * canvasWidth + startX) * 4;
+            const startR = data[targetPos];
+            const startG = data[targetPos + 1];
+            const startB = data[targetPos + 2];
+            const startA = data[targetPos + 3];
+
+            const fillRgb = hexToRgb(fillColor);
+            if (startR === fillRgb.r && startG === fillRgb.g && startB === fillRgb.b) return;
+
+            const pixelStack = [[startX, startY]];
+
+            while (pixelStack.length > 0) {
+                const [x, y] = pixelStack.pop();
+                const pos = (y * canvasWidth + x) * 4;
+
+                if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
+                    if (data[pos] === startR && data[pos + 1] === startG && data[pos + 2] === startB && data[pos + 3] === startA) {
+                        data[pos] = fillRgb.r;
+                        data[pos + 1] = fillRgb.g;
+                        data[pos + 2] = fillRgb.b;
+                        data[pos + 3] = 255;
+
+                        pixelStack.push([x + 1, y]);
+                        pixelStack.push([x - 1, y]);
+                        pixelStack.push([x, y + 1]);
+                        pixelStack.push([x, y - 1]);
+                    }
+                }
+            }
+            mainCtx.putImageData(imgData, 0, 0);
+        }
+
+        function hexToRgb(hex) {
+            let c = hex.replace('#', '');
+            if (c.length === 3) c = c.split('').map(x => x + x).join('');
+            const num = parseInt(c, 16);
+            return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+        }
+
+        function renderPalette() {
+            const container = document.getElementById('palette-list');
+            container.innerHTML = '';
+            paletteColors.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = `color-swatch ${color === currentColor ? 'active' : ''}`;
+                swatch.style.backgroundColor = color;
+                swatch.onclick = () => {
+                    currentColor = color;
+                    renderPalette();
+                };
+                container.appendChild(swatch);
+            });
+        }
+
+        function addColorFromPicker(color) {
+            currentColor = color;
+            addColorToPalette(color);
+        }
+
+        function addColorToPalette(color) {
+            if (!paletteColors.includes(color)) {
+                paletteColors.unshift(color);
+                if (paletteColors.length > 14) paletteColors.pop();
+            }
+            renderPalette();
+        }
+
+        /* --- フリーユーザー向けダイレクトキャンバスダウンロード --- */
+        function downloadCanvasDirectly() {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvasWidth;
+            tempCanvas.height = canvasHeight;
+            const ctx = tempCanvas.getContext('2d');
+            ctx.drawImage(mainCanvas, 0, 0);
+
+            const link = document.createElement('a');
+            link.download = `ichpixel-art-${canvasWidth}x${canvasHeight}-${Date.now()}.png`;
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
+            showToast('画像をダウンロードしました！');
+        }
+
+        /* --- プロユーザー向け解像度・倍率指定エクスポート --- */
+        function openProDownloadDialogForArtwork(artwork) {
+            if (!isProUser) {
+                showToast('ライブラリからのプロ高画質ダウンロードはPro限定です');
+                openProCodeDialog();
+                return;
+            }
+            targetArtworkForExport = artwork;
+            document.getElementById('export-custom-w').value = artwork.width * 4;
+            document.getElementById('export-custom-h').value = artwork.height * 4;
+            openDialog('pro-download-dialog');
+        }
+
+        function onExportScaleChange(val) {
+            const customBox = document.getElementById('export-custom-size-box');
+            if (val === 'custom') {
+                customBox.style.display = 'flex';
+            } else {
+                customBox.style.display = 'none';
+            }
+        }
+
+        function executeProDownload() {
+            if (!targetArtworkForExport) return;
+
+            const scaleVal = document.getElementById('export-scale-select').value;
+            const smoothingVal = document.getElementById('export-smoothing-select').value;
+            const formatVal = document.getElementById('export-format-select').value;
+
+            let exportW = targetArtworkForExport.width;
+            let exportH = targetArtworkForExport.height;
+
+            if (scaleVal === 'custom') {
+                exportW = parseInt(document.getElementById('export-custom-w').value) || exportW;
+                exportH = parseInt(document.getElementById('export-custom-h').value) || exportH;
+            } else {
+                const mult = parseInt(scaleVal) || 1;
+                exportW = exportW * mult;
+                exportH = exportH * mult;
+            }
+
+            const img = new Image();
+            img.onload = () => {
+                const exportCanvas = document.createElement('canvas');
+                exportCanvas.width = exportW;
+                exportCanvas.height = exportH;
+                const eCtx = exportCanvas.getContext('2d');
+
+                if (smoothingVal === 'pixelated') {
+                    eCtx.imageSmoothingEnabled = false;
+                    eCtx.mozImageSmoothingEnabled = false;
+                    eCtx.webkitImageSmoothingEnabled = false;
+                    eCtx.msImageSmoothingEnabled = false;
+                } else {
+                    eCtx.imageSmoothingEnabled = true;
+                }
+
+                if (formatVal === 'image/jpeg') {
+                    eCtx.fillStyle = '#FFFFFF';
+                    eCtx.fillRect(0, 0, exportW, exportH);
+                }
+
+                eCtx.drawImage(img, 0, 0, exportW, exportH);
+
+                const ext = formatVal === 'image/jpeg' ? 'jpg' : 'png';
+                const link = document.createElement('a');
+                link.download = `ichpixel-pro-${exportW}x${exportH}.${ext}`;
+                link.href = exportCanvas.toDataURL(formatVal, 0.95);
+                link.click();
+
+                closeDialog('pro-download-dialog');
+                showToast(`高画質エクスポート完了: ${exportW}x${exportH} px`);
+            };
+            img.src = targetArtworkForExport.dataUrl;
+        }
+
+        function triggerColorReplace() {
+            if (!isProUser) {
+                showToast('色の一括置換機能はPro限定です');
+                openProCodeDialog();
+                return;
+            }
+            openDialog('color-replace-dialog');
+        }
+
+        function executeColorReplace() {
+            const fromHex = document.getElementById('replace-from-color').value;
+            const toHex = document.getElementById('replace-to-color').value;
+
+            const fromRgb = hexToRgb(fromHex);
+            const toRgb = hexToRgb(toHex);
+
+            const imgData = mainCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+            const data = imgData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i] === fromRgb.r && data[i + 1] === fromRgb.g && data[i + 2] === fromRgb.b) {
+                    data[i] = toRgb.r;
+                    data[i + 1] = toRgb.g;
+                    data[i + 2] = toRgb.b;
+                }
+            }
+
+            mainCtx.putImageData(imgData, 0, 0);
+            closeDialog('color-replace-dialog');
+            showToast('指定色を一括置換しました');
+        }
+
+        let importTypeMode = 'resize';
+
+        function triggerImageImport(mode) {
+            if (mode === 'original' && !isProUser) {
+                showToast('原寸インポートはPro限定です');
+                openProCodeDialog();
+                return;
+            }
+            importTypeMode = mode;
+            document.getElementById('image-import-input').click();
+        }
+
+        function handleImageFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const img = new Image();
+                img.onload = () => {
+                    if (importTypeMode === 'original') {
+                        createCanvas(img.width, img.height);
+                        mainCtx.drawImage(img, 0, 0);
+                    } else {
+                        mainCtx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                    }
+                    showToast('画像をインポートしました');
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function triggerOverlayImageImport() {
+            if (!isProUser) {
+                showToast('ドット絵への直接画像追加はPro限定です');
+                openProCodeDialog();
+                return;
+            }
+            document.getElementById('overlay-import-input').click();
+        }
+
+        function handleOverlayImageSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const img = new Image();
+                img.onload = () => {
+                    overlayImage = img;
+                    overlayX = Math.floor((canvasWidth - img.width) / 2);
+                    overlayY = Math.floor((canvasHeight - img.height) / 2);
+                    drawOverlay();
+                    showToast('重ね配置画像を読み込み、結合しました');
+                    mainCtx.drawImage(overlayImage, 0, 0, canvasWidth, canvasHeight);
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function drawOverlay() {
+            overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            if (overlayImage) {
+                overlayCtx.drawImage(overlayImage, overlayX, overlayY);
+            }
+        }
+
+        function saveCurrentCanvasToLibrary() {
+            if (!isProUser) {
+                showToast('ライブラリへの作品保存にはPro権限が必要です');
+                openProCodeDialog();
+                return;
+            }
+
+            const dataUrl = mainCanvas.toDataURL();
+            const artwork = {
+                id: 'art-' + Date.now(),
+                title: `作品 (${canvasWidth}x${canvasHeight})`,
+                width: canvasWidth,
+                height: canvasHeight,
+                dataUrl: dataUrl,
+                updatedAt: Date.now()
+            };
+
+            const tx = dbInstance.transaction('artworks', 'readwrite');
+            tx.objectStore('artworks').put(artwork);
+            tx.oncomplete = () => {
+                showToast('作品をライブラリに保存しました');
+                loadLibraryItems();
+            };
+        }
+
+        function loadLibraryItems() {
+            if (!dbInstance || !isProUser) return;
+
+            const container = document.getElementById('library-items-container');
+            container.innerHTML = '';
+
+            const tx = dbInstance.transaction('artworks', 'readonly');
+            const store = tx.objectStore('artworks');
+            const req = store.getAll();
+
+            req.onsuccess = () => {
+                const items = req.result;
+                items.sort((a, b) => b.updatedAt - a.updatedAt);
+
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'library-card';
+
+                    card.innerHTML = `
+                        <img src="${item.dataUrl}" class="library-preview" alt="${item.title}">
+                        <div class="library-title">${item.title}</div>
+                        <div class="library-actions">
+                            <button class="ai-btn ai-btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" id="load-btn-${item.id}">編集</button>
+                            <button class="ai-btn" style="flex: 1; padding: 6px; font-size: 11px;" id="dl-btn-${item.id}">Pro保存</button>
+                        </div>
+                    `;
+
+                    container.appendChild(card);
+
+                    // イベントリスナーの割り当て
+                    card.querySelector('.library-preview').onclick = () => loadArtworkFromLibrary(item);
+                    document.getElementById(`load-btn-${item.id}`).onclick = () => loadArtworkFromLibrary(item);
+                    document.getElementById(`dl-btn-${item.id}`).onclick = () => openProDownloadDialogForArtwork(item);
+                });
+            };
+        }
+
+        function loadArtworkFromLibrary(item) {
+            const img = new Image();
+            img.onload = () => {
+                createCanvas(item.width, item.height);
+                mainCtx.drawImage(img, 0, 0);
+                showToast(`「${item.title}」を読み込みました`);
+            };
+            img.src = item.dataUrl;
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.nav-item').forEach(n => {
+                n.classList.remove('active');
+                if (n.getAttribute('data-view') === viewId) n.classList.add('active');
+            });
+
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.remove('active');
+                if (v.id === viewId) v.classList.add('active');
+            });
+        }
+
+        function openProCodeDialog() { openDialog('pro-code-dialog'); }
+        function openNewCanvasDialog() { openDialog('new-canvas-dialog'); }
+
+        function openDialog(id) { document.getElementById(id).classList.add('active'); }
+        function closeDialog(id) { document.getElementById(id).classList.remove('active'); }
+
+        function submitCustomCanvasSize() {
+            const w = parseInt(document.getElementById('canvas-width-input').value) || 32;
+            const h = parseInt(document.getElementById('canvas-height-input').value) || 32;
+            closeDialog('new-canvas-dialog');
+            createCanvas(w, h);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-message');
+            toast.textContent = msg;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2400);
+        }
+
+        // テーマ切り替え
+        const themeBtn = document.getElementById('theme-btn');
+        themeBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-mode');
+            themeBtn.querySelector('span').textContent = isDark ? 'dark_mode' : 'light_mode';
+        });
+
+        // 触感スクイッシュエフェクト
+        document.addEventListener('mousedown', (e) => {
+            const target = e.target.closest('.glass-card, .ai-btn, .nav-item, .tool-btn');
+            if (target) {
+                target.classList.remove('squish-active');
+                void target.offsetWidth;
+                target.classList.add('squish-active');
+                setTimeout(() => target.classList.remove('squish-active'), 350);
+            }
+        });
+
+        window.onload = async () => {
+            checkPersistentProStatus();
+            renderPalette();
+            updatePenSize(1);
+            updateEraserSize(1);
+            createCanvas(32, 32);
+
+            try {
+                await initIndexedDB();
+                await seedSampleArtwork();
+            } catch (err) {
+                console.error("IndexedDB Error:", err);
+            }
+        };
+    </script>
+</body>
+</html>
