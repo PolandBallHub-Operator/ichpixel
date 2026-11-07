@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
     <title>IchPixel - Proドット絵メーカー</title>
 
-    <!-- Google Fonts & Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 
@@ -13,16 +12,14 @@
         :root {
             --accent-primary: #3381FF;
             --accent-active: #1A5FCC;
-            
-            --ptz-theme-name: "IchPixel PTZ";
+
             --ptz-card-radius: 24px;
-            --ptz-slider-height: 30px;
+            --ptz-slider-height: 25px;
             --ptz-toggle-width: 54px;
             --ptz-toggle-height: 30px;
             --ptz-toggle-knob-radius: 50%;
             --ptz-toggle-knob-width: 22px;
 
-            /* Light Mode ベースカラー */
             --bg-base: #F7F7F7;
             --glass-bg: #FFFFFF;
             --text-main: #000000;
@@ -30,13 +27,12 @@
             --bg-secondary: #EEEEEE;
             --nav-bg: #FFFFFF;
             --nav-icon-active: #000000;
-            
+
             --m3-easing: cubic-bezier(0.32, 0.72, 0, 1);
             --transition-smooth: 0.35s var(--m3-easing);
             --card-padding: 24px;
         }
 
-        /* ダークモード */
         .dark-mode {
             --bg-base: #121212;
             --glass-bg: #1E1E1E;
@@ -69,15 +65,17 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            overflow: hidden;
         }
 
+        /* ヘッダー（背景色と同色） */
         header {
             height: 64px;
             padding: 0 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: var(--glass-bg);
+            background: var(--bg-base);
             transition: background-color var(--transition-smooth);
             position: relative;
             flex-shrink: 0;
@@ -118,18 +116,26 @@
             justify-content: center;
             transition: background var(--transition-smooth), transform 0.2s;
         }
-        .theme-toggle:active {
-            transform: scale(0.9);
-        }
+        .theme-toggle:active { transform: scale(0.92); }
 
         main {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 20px 20px 160px;
+            padding: 12px 20px 160px;
             max-width: 800px;
             width: 100%;
             margin: 0 auto;
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: none;
+            will-change: transform;
+        }
+
+        #overscroll-wrapper {
+            transform-origin: center top;
+            transition: transform 0s linear;
+        }
+        #overscroll-wrapper.spring-back {
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .glass-card {
@@ -142,11 +148,11 @@
             transition: background-color var(--transition-smooth), border-radius var(--transition-smooth);
         }
 
-        h2 { 
-            font-size: 18px; 
-            margin-top: 0; 
+        h2 {
+            font-size: 18px;
+            margin-top: 0;
             margin-bottom: 12px;
-            font-weight: 700; 
+            font-weight: 700;
             letter-spacing: -0.3px;
         }
         p {
@@ -157,16 +163,14 @@
             color: var(--text-sub);
         }
 
-        /* 厚口スライダー */
-        .thick-slider-wrapper {
-            margin: 10px 0;
-        }
+        /* 太いスライダー（HyperUI） */
+        .thick-slider-wrapper { margin: 14px 0; }
         .slider-label-row {
             display: flex;
             justify-content: space-between;
             font-size: 13px;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .thick-slider-container {
             position: relative;
@@ -186,20 +190,20 @@
             height: 100%;
             width: 50%;
             background: var(--accent-primary);
+            transition: background-color var(--transition-smooth), width 0.05s ease-out;
             border-radius: calc(var(--ptz-slider-height) / 2);
-            transition: background-color var(--transition-smooth);
-            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 3px;
         }
-        .thick-slider-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-main);
-            pointer-events: none;
-            z-index: 2;
-            letter-spacing: 0.5px;
+        .thick-slider-knob {
+            width: calc(var(--ptz-slider-height) - 6px);
+            height: calc(var(--ptz-slider-height) - 6px);
+            background: #FFFFFF;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+            flex-shrink: 0;
         }
         .thick-slider-input {
             position: absolute;
@@ -210,7 +214,7 @@
             opacity: 0;
             cursor: pointer;
             margin: 0;
-            z-index: 3;
+            z-index: 5;
         }
 
         .shape-selector-group {
@@ -225,6 +229,7 @@
             border: none;
             background: var(--bg-secondary);
             color: var(--text-main);
+            font-family: inherit;
             font-weight: 600;
             font-size: 12px;
             cursor: pointer;
@@ -232,28 +237,27 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s, opacity 0.1s;
         }
+        .shape-btn:active { opacity: 0.85; }
         .shape-btn.active {
             background: var(--accent-primary);
             color: white;
         }
 
+        /* リスト（仕切り線なし） */
         .custom-list {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 6px;
             margin-bottom: 16px;
         }
         .list-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 4px;
-            border-bottom: 1px solid var(--bg-secondary);
-        }
-        .list-item:last-child {
-            border-bottom: none;
+            padding: 10px 4px;
+            border-bottom: none !important;
         }
         .list-item-title {
             font-weight: 600;
@@ -262,6 +266,7 @@
         .list-item-desc {
             font-size: 12px;
             color: var(--text-sub);
+            margin-top: 2px;
         }
 
         .ai-btn {
@@ -271,30 +276,27 @@
             border-radius: 14px;
             font-weight: 600;
             font-size: 14px;
+            font-family: inherit;
             color: white;
             cursor: pointer;
             background: var(--accent-primary);
-            transition: transform 0.2s, background-color var(--transition-smooth);
+            transition: opacity 0.2s, background-color var(--transition-smooth);
             display: inline-flex;
             align-items: center;
             gap: 8px;
             justify-content: center;
         }
-        .ai-btn:hover {
-            transform: scale(1.02);
-        }
-        .ai-btn:active {
-            background: var(--accent-active);
-            transform: scale(0.96);
-        }
+        .ai-btn:active { opacity: 0.85; }
         .ai-btn-secondary {
             background: var(--bg-secondary);
             color: var(--text-main);
         }
-
-        .glass-input-wrapper {
-            margin-bottom: 14px;
+        .ai-btn-danger {
+            background: #FF3B30;
+            color: #fff;
         }
+
+        .glass-input-wrapper { margin-bottom: 14px; }
         .glass-input {
             width: 100%;
             padding: 12px 16px;
@@ -307,22 +309,23 @@
             box-sizing: border-box;
             transition: background var(--transition-smooth);
         }
-        .glass-input:focus {
-            outline: 2px solid var(--accent-primary);
-        }
+        .glass-input:focus { outline: 2px solid var(--accent-primary); }
 
+        /* トグル */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 4px;
+        }
         .switch {
             position: relative;
             display: inline-block;
             width: var(--ptz-toggle-width);
             height: var(--ptz-toggle-height);
-            transition: width var(--transition-smooth), height var(--transition-smooth);
+            flex-shrink: 0;
         }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute;
             cursor: pointer;
@@ -341,10 +344,9 @@
             background: white;
             transition: var(--transition-smooth);
             border-radius: var(--ptz-toggle-knob-radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
         }
-        input:checked + .slider {
-            background: var(--accent-primary);
-        }
+        input:checked + .slider { background: var(--accent-primary); }
         input:checked + .slider:before {
             transform: translateX(calc(var(--ptz-toggle-width) - var(--ptz-toggle-knob-width) - 8px));
         }
@@ -382,18 +384,13 @@
             font-variation-settings: 'FILL' 0, 'wght' 400;
             transition: font-variation-settings 0.2s, color 0.2s;
         }
-        .nav-label {
-            font-size: 10px;
-            font-weight: 600;
-        }
-        .nav-item.active {
-            color: var(--nav-icon-active);
-        }
+        .nav-label { font-size: 10px; font-weight: 600; }
+        .nav-item.active { color: var(--nav-icon-active); }
         .nav-item.active span.material-symbols-outlined {
             font-variation-settings: 'FILL' 1, 'wght' 700;
         }
 
-        /* 全面写真形式 PolandballPark バナー */
+        /* バナー */
         .free-park-banner-wrapper {
             position: fixed;
             bottom: 72px;
@@ -414,14 +411,11 @@
             overflow: hidden;
             position: relative;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
             display: block;
             text-decoration: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: opacity 0.2s ease;
         }
-        .free-park-banner-photo:active {
-            transform: scale(0.98);
-        }
+        .free-park-banner-photo:active { opacity: 0.85; }
         .free-park-banner-photo img {
             width: 100%;
             height: 100%;
@@ -448,9 +442,7 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
-        .view {
-            display: none;
-        }
+        .view { display: none; }
         .view.active {
             display: block;
             animation: viewIn 0.3s var(--m3-easing);
@@ -477,17 +469,10 @@
             position: absolute;
             transform-origin: center center;
             cursor: crosshair;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
         canvas {
             display: block;
             image-rendering: pixelated;
-        }
-        #gridCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
         }
         #overlayCanvas {
             position: absolute;
@@ -495,6 +480,48 @@
             left: 0;
             pointer-events: none;
             opacity: 0.8;
+        }
+        /* ドット格子: 画面解像度で描画する専用レイヤー */
+        #gridCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            image-rendering: auto;
+        }
+
+        /* スポイト取得中バナー */
+        .pick-banner {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: var(--text-main);
+            color: var(--glass-bg);
+            padding: 8px 8px 8px 16px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .pick-banner.active { display: flex; }
+        .pick-banner button {
+            border: none;
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 12px;
+            background: var(--accent-primary);
+            color: #fff;
+            cursor: pointer;
         }
 
         .tool-bar {
@@ -512,26 +539,25 @@
             border-radius: 12px;
             font-size: 13px;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s, opacity 0.1s;
         }
         .tool-btn.active {
             background: var(--accent-primary);
             color: white;
         }
-        .tool-btn:active {
-            transform: scale(0.95);
-        }
+        .tool-btn:active { opacity: 0.85; }
 
         .palette-container {
             display: flex;
             align-items: center;
             gap: 8px;
             overflow-x: auto;
-            padding: 6px 0;
+            padding: 6px 4px;
         }
         .color-swatch {
             width: 32px;
@@ -539,7 +565,6 @@
             border-radius: 50%;
             flex-shrink: 0;
             cursor: pointer;
-            transition: transform 0.2s;
             position: relative;
         }
         .color-swatch.active::after {
@@ -561,7 +586,6 @@
             border-radius: 16px;
             padding: 12px;
             text-align: center;
-            transition: transform 0.2s;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -599,9 +623,7 @@
             font-weight: 700;
             display: inline-block;
         }
-        .badge-pro {
-            background: linear-gradient(135deg, #FF9500, #FF2D55);
-        }
+        .badge-pro { background: linear-gradient(135deg, #FF9500, #FF2D55); }
 
         .toast {
             position: fixed;
@@ -618,6 +640,8 @@
             visibility: hidden;
             transition: all 0.3s var(--m3-easing);
             z-index: 2000;
+            max-width: 90vw;
+            text-align: center;
         }
         .toast.active {
             opacity: 1;
@@ -641,22 +665,35 @@
         }
         .dialog-overlay.active .glass-dialog { transform: scale(1) translateY(0); }
 
-        @keyframes squishy {
-            0% { transform: scale(1, 1); }
-            30% { transform: scale(1.06, 0.94); }
-            50% { transform: scale(0.97, 1.03); }
-            70% { transform: scale(1.01, 0.99); }
-            100% { transform: scale(1, 1); }
+        .color-pick-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
         }
-        .squish-active {
-            animation: squishy 0.35s var(--m3-easing);
+        .color-pick-row .pick-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
+        .eyedropper-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .eyedropper-btn:active { opacity: 0.85; }
     </style>
 </head>
 <body>
 
     <div id="app-viewport">
-        <!-- ヘッダー -->
         <header>
             <div class="header-brand">
                 <img src="https://raw.githubusercontent.com/PolandBallHub-Operator/pbimagesPublic/refs/heads/main/newballs/germany/frontnormal.png" alt="IchPixel Icon" class="app-icon">
@@ -673,257 +710,258 @@
             </div>
         </header>
 
-        <!-- メインコンテンツ -->
-        <main>
-            <!-- 1. ホームビュー -->
-            <section id="view-home" class="view active">
-                <div class="glass-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span class="badge badge-pro" id="home-pro-status">Pro機能ロック中</span>
-                        <span style="font-size: 11px; color: var(--text-sub);">Version 2.9 Pro</span>
-                    </div>
-                    <h2>Proドット絵メーカー 「IchPixel」</h2>
-                    <p>
-                        モバイル操作に完全最適化されたプロフェッショナル向けドット絵エディタ。ドット絵の書き出し・ダウンロード、ペン太さ調整、形式・サイズ変更可能なPro解像度エクスポート機能を完備。
-                    </p>
-                    <div style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="ai-btn" onclick="openNewCanvasDialog()">
-                            <span class="material-symbols-outlined">add_box</span>
-                            新規キャンバス作成
-                        </button>
-                        <button class="ai-btn ai-btn-secondary" onclick="openProCodeDialog()">
-                            <span class="material-symbols-outlined">stars</span>
-                            FanUnlock (プロコード)
-                        </button>
-                    </div>
-                </div>
+        <main id="main-scroll-area">
+            <div id="overscroll-wrapper">
 
-                <div class="glass-card">
-                    <h2>クイックキャンバス設定</h2>
-                    <p>サイズを指定してドット絵制作を開始します（上限 8000 x 8000px）。</p>
-                    
-                    <div class="custom-list">
-                        <div class="list-item">
-                            <div>
-                                <div class="list-item-title">標準 32 x 32</div>
-                                <div class="list-item-desc">アイコンやキャラドット向け</div>
-                            </div>
-                            <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="createCanvas(32, 32)">作成</button>
+                <!-- 1. ホーム -->
+                <section id="view-home" class="view active">
+                    <div class="glass-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span class="badge badge-pro" id="home-pro-status">Pro機能ロック中</span>
+                            <span style="font-size: 11px; color: var(--text-sub);">Version 3.0 Pro</span>
                         </div>
-                        <div class="list-item">
-                            <div>
-                                <div class="list-item-title">高解像度 128 x 128</div>
-                                <div class="list-item-desc">詳細イラスト向け</div>
-                            </div>
-                            <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="createCanvas(128, 128)">作成</button>
-                        </div>
-                        <div class="list-item">
-                            <div>
-                                <div class="list-item-title">巨大 2000 x 2000 以上</div>
-                                <div class="list-item-desc">Pro限定の高解像度キャンバス</div>
-                            </div>
-                            <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="checkProCanvasRequirement()">プロ仕様</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass-card">
-                    <h2>画像をインポート</h2>
-                    <p>既存の画像をドット絵キャンバスに読み込んで編集できます。</p>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="ai-btn ai-btn-secondary" onclick="triggerImageImport('resize')">
-                            <span class="material-symbols-outlined">compress</span>
-                            縮小インポート
-                        </button>
-                        <button class="ai-btn ai-btn-secondary" onclick="triggerImageImport('original')">
-                            <span class="material-symbols-outlined">aspect_ratio</span>
-                            原寸サイズでインポート (Pro)
-                        </button>
-                    </div>
-                    <input type="file" id="image-import-input" accept="image/*" style="display: none;" onchange="handleImageFileSelect(event)">
-                </div>
-            </section>
-
-            <!-- 2. キャンバス描画ビュー -->
-            <section id="view-canvas" class="view">
-                <div class="glass-card" style="padding: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-                        <div>
-                            <span style="font-weight: 700; font-size: 14px;" id="canvas-size-indicator">32 x 32 px</span>
-                            <span style="font-size: 12px; color: var(--text-sub); margin-left: 8px;" id="zoom-level-text">ズーム: 100%</span>
-                        </div>
-                        <div style="display: flex; gap: 6px;">
-                            <button class="tool-btn" style="padding: 6px 10px;" onclick="downloadCanvasDirectly()" title="ダウンロード (Free)">
-                                <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
-                                ダウンロード
-                            </button>
-                            <button class="tool-btn" style="padding: 6px 10px;" onclick="resetCanvasTransform()" title="ビューリセット">
-                                <span class="material-symbols-outlined" style="font-size: 18px;">center_focus_strong</span>
-                            </button>
-                            <button class="tool-btn" style="padding: 6px 10px; background: var(--accent-primary); color: white;" onclick="saveCurrentCanvasToLibrary()" title="ライブラリ保存">
-                                <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
-                                保存
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 拡大スライダー -->
-                    <div class="thick-slider-wrapper">
-                        <div class="slider-label-row">
-                            <span><span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">zoom_in</span> 拡大スライダー</span>
-                        </div>
-                        <div class="thick-slider-container">
-                            <div class="thick-slider-fill" id="zoom-slider-fill" style="width: 10%;"></div>
-                            <div class="thick-slider-text" id="zoom-slider-val">拡大率: 100%</div>
-                            <input type="range" class="thick-slider-input" id="zoom-slider-input" min="50" max="3000" value="100" oninput="handleZoomSliderChange(this.value)">
-                        </div>
-                    </div>
-
-                    <!-- キャンバスワークスペース -->
-                    <div class="canvas-workspace" id="workspace">
-                        <div class="canvas-container" id="canvas-container">
-                            <canvas id="mainCanvas" width="32" height="32"></canvas>
-                            <canvas id="overlayCanvas" width="32" height="32"></canvas>
-                            <canvas id="gridCanvas" width="32" height="32"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- 描画ツールバー -->
-                    <div class="tool-bar">
-                        <button class="tool-btn active" id="tool-pen" onclick="setTool('pen')">
-                            <span class="material-symbols-outlined">edit</span> ペン
-                        </button>
-                        <button class="tool-btn" id="tool-eraser" onclick="setTool('eraser')">
-                            <span class="material-symbols-outlined">ink_eraser</span> 消しゴム
-                        </button>
-                        <button class="tool-btn" id="tool-bucket" onclick="setTool('bucket')">
-                            <span class="material-symbols-outlined">format_color_fill</span> バケツ
-                        </button>
-                        <button class="tool-btn" id="tool-picker" onclick="setTool('picker')">
-                            <span class="material-symbols-outlined">colorize</span> スポイト
-                        </button>
-                        <button class="tool-btn" id="tool-replace" onclick="triggerColorReplace()">
-                            <span class="material-symbols-outlined">find_replace</span> 色一括置換 (Pro)
-                        </button>
-                    </div>
-
-                    <!-- ブラシ＆消しゴム設定 -->
-                    <div style="background: var(--bg-secondary); border-radius: 16px; padding: 12px; margin-top: 10px;">
-                        <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
-                            <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-primary);">tune</span>
-                            プロ向け ブラシ＆消しゴム設定
-                        </div>
-
-                        <!-- 線の太さ調整 -->
-                        <div class="thick-slider-wrapper" id="pen-size-control">
-                            <div class="slider-label-row">
-                                <span>線の太さ（ペンサイズ）</span>
-                                <span id="pen-size-display">1 px</span>
-                            </div>
-                            <div class="thick-slider-container">
-                                <div class="thick-slider-fill" id="pen-size-fill" style="width: 0%;"></div>
-                                <div class="thick-slider-text" id="pen-size-text">ペンサイズ: 1 px</div>
-                                <input type="range" class="thick-slider-input" id="pen-size-input" min="1" max="32" value="1" oninput="updatePenSize(this.value)">
-                            </div>
-                        </div>
-
-                        <!-- 消しゴムの太さ調整 -->
-                        <div class="thick-slider-wrapper" id="eraser-size-control">
-                            <div class="slider-label-row">
-                                <span>消しゴムの太さ</span>
-                                <span id="eraser-size-display">1 px</span>
-                            </div>
-                            <div class="thick-slider-container">
-                                <div class="thick-slider-fill" id="eraser-size-fill" style="width: 0%;"></div>
-                                <div class="thick-slider-text" id="eraser-size-text">消しゴムサイズ: 1 px</div>
-                                <input type="range" class="thick-slider-input" id="eraser-size-input" min="1" max="32" value="1" oninput="updateEraserSize(this.value)">
-                            </div>
-                        </div>
-
-                        <!-- ペンの形調整 -->
-                        <div style="margin-top: 10px;">
-                            <div style="font-size: 12px; font-weight: 600; color: var(--text-sub);">ペンの形状</div>
-                            <div class="shape-selector-group">
-                                <button class="shape-btn active" id="shape-square" onclick="setPenShape('square')">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">square</span>
-                                    正方形 (Square)
-                                </button>
-                                <button class="shape-btn" id="shape-circle" onclick="setPenShape('circle')">
-                                    <span class="material-symbols-outlined" style="font-size: 16px;">circle</span>
-                                    円形 (Circle)
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- カラーパレット -->
-                    <div style="margin-top: 12px;">
-                        <div style="font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-sub);">カラーパレット</div>
-                        <div class="palette-container" id="palette-list"></div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                            <input type="color" id="native-color-picker" value="#000000" onchange="addColorFromPicker(this.value)" style="width: 36px; height: 36px; border: none; background: none; cursor: pointer;">
-                            <span style="font-size: 12px; color: var(--text-sub);">色を選択してパレットに追加</span>
-                        </div>
-                    </div>
-
-                    <!-- グリッド表示 -->
-                    <div style="margin-top: 14px; border-top: 1px solid var(--bg-secondary); padding-top: 10px;">
-                        <div class="toggle-row" style="padding: 4px 0; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div class="list-item-title">ドット線（1pxマス目格子）</div>
-                                <div class="list-item-desc">キャンバスの背景に1ピクセルの網目を表示</div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="grid-toggle" checked onchange="toggleGrid(this.checked)">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- 画像重ね配置 -->
-                    <div style="margin-top: 10px;" id="overlay-tool-section">
-                        <button class="ai-btn ai-btn-secondary" style="width: 100%; justify-content: center;" onclick="triggerOverlayImageImport()">
-                            <span class="material-symbols-outlined">layers</span>
-                            ドット絵に画像を直接重ね配置 (Pro)
-                        </button>
-                        <input type="file" id="overlay-import-input" accept="image/*" style="display: none;" onchange="handleOverlayImageSelect(event)">
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. 作品ライブラリビュー -->
-            <section id="view-library" class="view">
-                <div id="library-pr-card" class="glass-card">
-                    <div style="text-align: center; padding: 12px 0;">
-                        <span class="material-symbols-outlined" style="font-size: 56px; color: #FF9500; margin-bottom: 8px;">star</span>
-                        <h2>プロのように楽しみましょう！</h2>
-                        <p style="max-width: 460px; margin: 0 auto 20px;">
-                            Proを有効化すると、作品の無限保存、巨大解像度でのプロエクスポート（拡大・倍率指定・高品質ダウンロード）などの機能が解放されます。
+                        <h2>Proドット絵メーカー 「IchPixel」</h2>
+                        <p>
+                            モバイル操作に完全最適化されたプロフェッショナル向けドット絵エディタ。ドット絵の書き出し・ダウンロード、ペン太さ調整、形式・サイズ変更可能なPro解像度エクスポート機能を完備。
                         </p>
-                        <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px; margin: 0 auto;">
-                            <button class="ai-btn" onclick="openProCodeDialog()">
-                                <span class="material-symbols-outlined">key</span>
-                                プロコードを入力して解放
+                        <div style="margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="ai-btn" onclick="openNewCanvasDialog()">
+                                <span class="material-symbols-outlined">add_box</span>
+                                新規キャンバス作成
+                            </button>
+                            <button class="ai-btn ai-btn-secondary" onclick="openProCodeDialog()">
+                                <span class="material-symbols-outlined">stars</span>
+                                FanUnlock (プロコード)
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <div id="library-main-content" class="glass-card" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h2>作品ライブラリ</h2>
-                        <button class="ai-btn" style="padding: 8px 14px;" onclick="openNewCanvasDialog()">
-                            <span class="material-symbols-outlined">add</span> 新規作成
-                        </button>
+                    <div class="glass-card">
+                        <h2>クイックキャンバス設定</h2>
+                        <p>サイズを指定してドット絵制作を開始します（上限 8000 x 8000px）。</p>
+
+                        <div class="custom-list">
+                            <div class="list-item">
+                                <div>
+                                    <div class="list-item-title">標準 32 x 32</div>
+                                    <div class="list-item-desc">アイコンやキャラドット向け</div>
+                                </div>
+                                <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="createCanvas(32, 32)">作成</button>
+                            </div>
+                            <div class="list-item">
+                                <div>
+                                    <div class="list-item-title">高解像度 128 x 128</div>
+                                    <div class="list-item-desc">詳細イラスト向け</div>
+                                </div>
+                                <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="createCanvas(128, 128)">作成</button>
+                            </div>
+                            <div class="list-item">
+                                <div>
+                                    <div class="list-item-title">巨大 2000 x 2000 以上</div>
+                                    <div class="list-item-desc">Pro限定の高解像度キャンバス</div>
+                                </div>
+                                <button class="ai-btn ai-btn-secondary" style="padding: 6px 14px;" onclick="checkProCanvasRequirement()">プロ仕様</button>
+                            </div>
+                        </div>
                     </div>
-                    <p>保存された作品の一覧です。ダウンロード・再編集が可能です。</p>
-                    
-                    <div class="library-grid" id="library-items-container"></div>
-                </div>
-            </section>
+
+                    <div class="glass-card">
+                        <h2>画像をインポート</h2>
+                        <p>既存の画像をドット絵キャンバスに読み込んで編集できます。</p>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="ai-btn ai-btn-secondary" onclick="triggerImageImport('resize')">
+                                <span class="material-symbols-outlined">compress</span>
+                                縮小インポート
+                            </button>
+                            <button class="ai-btn ai-btn-secondary" onclick="triggerImageImport('original')">
+                                <span class="material-symbols-outlined">aspect_ratio</span>
+                                原寸サイズでインポート (Pro)
+                            </button>
+                        </div>
+                        <input type="file" id="image-import-input" accept="image/*" style="display: none;" onchange="handleImageFileSelect(event)">
+                    </div>
+                </section>
+
+                <!-- 2. キャンバス -->
+                <section id="view-canvas" class="view">
+                    <div class="glass-card" style="padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                            <div>
+                                <span style="font-weight: 700; font-size: 14px;" id="canvas-size-indicator">32 x 32 px</span>
+                                <span style="font-size: 12px; color: var(--text-sub); margin-left: 8px;" id="zoom-level-text">ズーム: 100%</span>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button class="tool-btn" style="padding: 6px 10px;" onclick="downloadCanvasDirectly()" title="ダウンロード (Free)">
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                                    ダウンロード
+                                </button>
+                                <button class="tool-btn" style="padding: 6px 10px;" onclick="resetCanvasTransform()" title="ビューリセット">
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">center_focus_strong</span>
+                                </button>
+                                <button class="tool-btn" style="padding: 6px 10px; background: var(--accent-primary); color: white;" onclick="saveCurrentCanvasToLibrary()" title="ライブラリ保存">
+                                    <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+                                    保存
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 拡大スライダー -->
+                        <div class="thick-slider-wrapper">
+                            <div class="slider-label-row">
+                                <span><span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">zoom_in</span> 拡大スライダー</span>
+                                <span id="zoom-slider-val">100%</span>
+                            </div>
+                            <div class="thick-slider-container">
+                                <div class="thick-slider-fill" id="zoom-slider-fill"><div class="thick-slider-knob"></div></div>
+                                <input type="range" class="thick-slider-input" id="zoom-slider-input" min="5" max="3000" value="100" oninput="handleZoomSliderChange(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- ワークスペース -->
+                        <div class="canvas-workspace" id="workspace">
+                            <div class="canvas-container" id="canvas-container">
+                                <canvas id="mainCanvas" width="32" height="32"></canvas>
+                                <canvas id="overlayCanvas" width="32" height="32"></canvas>
+                            </div>
+                            <canvas id="gridCanvas"></canvas>
+                            <div class="pick-banner" id="pick-banner">
+                                <span id="pick-banner-text">キャンバスをタップして色を取得</span>
+                                <button onclick="cancelReplacePick()">キャンセル</button>
+                            </div>
+                        </div>
+
+                        <!-- ツールバー -->
+                        <div class="tool-bar">
+                            <button class="tool-btn active" id="tool-pen" onclick="setTool('pen')">
+                                <span class="material-symbols-outlined">edit</span> ペン
+                            </button>
+                            <button class="tool-btn" id="tool-eraser" onclick="setTool('eraser')">
+                                <span class="material-symbols-outlined">ink_eraser</span> 消しゴム
+                            </button>
+                            <button class="tool-btn" id="tool-bucket" onclick="setTool('bucket')">
+                                <span class="material-symbols-outlined">format_color_fill</span> バケツ
+                            </button>
+                            <button class="tool-btn" id="tool-picker" onclick="setTool('picker')">
+                                <span class="material-symbols-outlined">colorize</span> スポイト
+                            </button>
+                            <button class="tool-btn" id="tool-replace" onclick="triggerColorReplace()">
+                                <span class="material-symbols-outlined">find_replace</span> 色一括置換 (Pro)
+                            </button>
+                        </div>
+
+                        <!-- ブラシ設定 -->
+                        <div style="background: var(--bg-secondary); border-radius: 16px; padding: 12px; margin-top: 10px;">
+                            <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-primary);">tune</span>
+                                プロ向け ブラシ＆消しゴム設定
+                            </div>
+
+                            <div class="thick-slider-wrapper" id="pen-size-control">
+                                <div class="slider-label-row">
+                                    <span>線の太さ（ペンサイズ）</span>
+                                    <span id="pen-size-display">1 px</span>
+                                </div>
+                                <div class="thick-slider-container" style="background: var(--glass-bg);">
+                                    <div class="thick-slider-fill" id="pen-size-fill"><div class="thick-slider-knob"></div></div>
+                                    <input type="range" class="thick-slider-input" id="pen-size-input" min="1" max="200" value="1" oninput="updatePenSize(this.value)">
+                                </div>
+                            </div>
+
+                            <div class="thick-slider-wrapper" id="eraser-size-control">
+                                <div class="slider-label-row">
+                                    <span>消しゴムの太さ</span>
+                                    <span id="eraser-size-display">1 px</span>
+                                </div>
+                                <div class="thick-slider-container" style="background: var(--glass-bg);">
+                                    <div class="thick-slider-fill" id="eraser-size-fill"><div class="thick-slider-knob"></div></div>
+                                    <input type="range" class="thick-slider-input" id="eraser-size-input" min="1" max="200" value="1" oninput="updateEraserSize(this.value)">
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 10px;">
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-sub);">ペンの形状</div>
+                                <div class="shape-selector-group">
+                                    <button class="shape-btn active" id="shape-square" onclick="setPenShape('square')">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;">square</span>
+                                        正方形 (Square)
+                                    </button>
+                                    <button class="shape-btn" id="shape-circle" onclick="setPenShape('circle')">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;">circle</span>
+                                        円形 (Circle)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- パレット -->
+                        <div style="margin-top: 12px;">
+                            <div style="font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-sub);">カラーパレット</div>
+                            <div class="palette-container" id="palette-list"></div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <input type="color" id="native-color-picker" value="#000000" onchange="addColorFromPicker(this.value)" style="width: 36px; height: 36px; border: none; background: none; cursor: pointer;">
+                                <span style="font-size: 12px; color: var(--text-sub);">色を選択してパレットに追加</span>
+                            </div>
+                        </div>
+
+                        <!-- グリッド -->
+                        <div style="margin-top: 14px;">
+                            <div class="toggle-row" style="padding: 4px 0;">
+                                <div>
+                                    <div class="list-item-title">ドット格子（1pxマス目）</div>
+                                    <div class="list-item-desc">1マスが約3px以上になる拡大率で表示されます</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="grid-toggle" checked onchange="toggleGrid(this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 画像重ね配置 -->
+                        <div style="margin-top: 10px;" id="overlay-tool-section">
+                            <button class="ai-btn ai-btn-secondary" style="width: 100%;" onclick="triggerOverlayImageImport()">
+                                <span class="material-symbols-outlined">layers</span>
+                                ドット絵に画像を直接重ね配置 (Pro)
+                            </button>
+                            <input type="file" id="overlay-import-input" accept="image/*" style="display: none;" onchange="handleOverlayImageSelect(event)">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. ライブラリ -->
+                <section id="view-library" class="view">
+                    <div id="library-pr-card" class="glass-card">
+                        <div style="text-align: center; padding: 12px 0;">
+                            <span class="material-symbols-outlined" style="font-size: 56px; color: #FF9500; margin-bottom: 8px;">star</span>
+                            <h2>プロのように楽しみましょう！</h2>
+                            <p style="max-width: 460px; margin: 0 auto 20px;">
+                                Proを有効化すると、作品の無限保存、巨大解像度でのプロエクスポート（拡大・倍率指定・高品質ダウンロード）などの機能が解放されます。
+                            </p>
+                            <div style="display: flex; flex-direction: column; gap: 8px; max-width: 300px; margin: 0 auto;">
+                                <button class="ai-btn" onclick="openProCodeDialog()">
+                                    <span class="material-symbols-outlined">key</span>
+                                    プロコードを入力して解放
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="library-main-content" class="glass-card" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h2 style="margin-bottom: 0;">作品ライブラリ</h2>
+                            <button class="ai-btn" style="padding: 8px 14px;" onclick="openNewCanvasDialog()">
+                                <span class="material-symbols-outlined">add</span> 新規作成
+                            </button>
+                        </div>
+                        <p>保存された作品の一覧です。ダウンロード・再編集・削除が可能です。</p>
+                        <div class="library-grid" id="library-items-container"></div>
+                    </div>
+                </section>
+
+            </div>
         </main>
 
-        <!-- PolandballParkプロモーションバナー（写真形式・ポランドボールURLリンク） -->
+        <!-- バナー -->
         <div id="free-park-banner" class="free-park-banner-wrapper">
             <a href="https://polandball.s.gy" target="_blank" class="free-park-banner-photo">
                 <img src="https://raw.githubusercontent.com/PolandBallHub-Operator/pbpark/refs/heads/main/osapps/weather/banner.png" alt="Polandball Banner Photo" onerror="this.src='https://placehold.co/800x120/1a1a2e/ffffff?text=PolandballPark'">
@@ -937,7 +975,6 @@
             </a>
         </div>
 
-        <!-- 下付き固定ナビゲーションバー -->
         <div class="bottom-nav-container">
             <div class="nav-item active" data-view="view-home" onclick="switchView('view-home')">
                 <span class="material-symbols-outlined">home</span>
@@ -954,7 +991,7 @@
         </div>
     </div>
 
-    <!-- プロコード入力ダイアログ -->
+    <!-- プロコード -->
     <div class="dialog-overlay" id="pro-code-dialog">
         <div class="glass-dialog">
             <span class="material-symbols-outlined" style="font-size: 44px; color: var(--accent-primary);">lock_open</span>
@@ -970,7 +1007,7 @@
         </div>
     </div>
 
-    <!-- 新規キャンバス作成ダイアログ -->
+    <!-- 新規キャンバス -->
     <div class="dialog-overlay" id="new-canvas-dialog">
         <div class="glass-dialog">
             <span class="material-symbols-outlined" style="font-size: 44px; color: var(--accent-primary);">aspect_ratio</span>
@@ -987,13 +1024,13 @@
         </div>
     </div>
 
-    <!-- プロ向けライブラリダウンロード（サイズ・拡大倍率・画質指定）ダイアログ -->
+    <!-- Proエクスポート -->
     <div class="dialog-overlay" id="pro-download-dialog">
         <div class="glass-dialog">
             <span class="material-symbols-outlined" style="font-size: 44px; color: var(--accent-primary);">download_for_offline</span>
             <h2 style="margin-top: 10px;">Pro 高画質エクスポート</h2>
             <p>作品を自由な倍率・カスタム解像度・補間方式で書き出します。</p>
-            
+
             <div style="text-align: left; margin-bottom: 16px;">
                 <label style="font-size: 12px; font-weight: 700; color: var(--text-sub); display: block; margin-bottom: 4px;">拡大倍率（スケール）</label>
                 <select class="glass-input" id="export-scale-select" onchange="onExportScaleChange(this.value)">
@@ -1037,21 +1074,31 @@
         </div>
     </div>
 
-    <!-- 色一括置換ダイアログ -->
+    <!-- 色一括置換 -->
     <div class="dialog-overlay" id="color-replace-dialog">
         <div class="glass-dialog">
             <span class="material-symbols-outlined" style="font-size: 44px; color: var(--accent-primary);">find_replace</span>
             <h2 style="margin-top: 10px;">特定の色を全置換 (Pro)</h2>
-            <p>置換元の色と、新しい置換後の色を選択してください。</p>
+            <p>色を直接選ぶか、スポイトボタンでキャンバスから色を取得できます。</p>
             <div style="display: flex; justify-content: space-around; align-items: center; margin: 16px 0;">
-                <div>
-                    <div style="font-size: 11px; margin-bottom: 4px;">変更前の色</div>
-                    <input type="color" id="replace-from-color" value="#000000" style="width: 48px; height: 48px; border: none; background: none; cursor: pointer;">
+                <div class="color-pick-row">
+                    <div style="font-size: 11px;">変更前の色</div>
+                    <div class="pick-line">
+                        <input type="color" id="replace-from-color" value="#000000" style="width: 48px; height: 48px; border: none; background: none; cursor: pointer;">
+                        <button class="eyedropper-btn" title="キャンバスから取得" onclick="startReplacePick('from')">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">colorize</span>
+                        </button>
+                    </div>
                 </div>
                 <span class="material-symbols-outlined">arrow_forward</span>
-                <div>
-                    <div style="font-size: 11px; margin-bottom: 4px;">変更後の色</div>
-                    <input type="color" id="replace-to-color" value="#3381FF" style="width: 48px; height: 48px; border: none; background: none; cursor: pointer;">
+                <div class="color-pick-row">
+                    <div style="font-size: 11px;">変更後の色</div>
+                    <div class="pick-line">
+                        <input type="color" id="replace-to-color" value="#3381FF" style="width: 48px; height: 48px; border: none; background: none; cursor: pointer;">
+                        <button class="eyedropper-btn" title="キャンバスから取得" onclick="startReplacePick('to')">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">colorize</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div style="display: flex; gap: 8px; justify-content: center;">
@@ -1061,44 +1108,51 @@
         </div>
     </div>
 
-    <!-- トースト通知 -->
+    <!-- 削除確認 -->
+    <div class="dialog-overlay" id="delete-confirm-dialog">
+        <div class="glass-dialog">
+            <span class="material-symbols-outlined" style="font-size: 44px; color: #FF3B30;">delete</span>
+            <h2 style="margin-top: 10px;">作品を削除</h2>
+            <p id="delete-confirm-text">この作品をライブラリから削除します。元に戻せません。</p>
+            <div style="display: flex; gap: 8px; justify-content: center;">
+                <button class="ai-btn ai-btn-secondary" style="flex: 1;" onclick="closeDialog('delete-confirm-dialog')">キャンセル</button>
+                <button class="ai-btn ai-btn-danger" style="flex: 1;" onclick="confirmDeleteArtwork()">削除する</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast-message">メッセージ</div>
 
     <script>
         /**
-         * IchPixel Pro Pixel Art Application - Core Script
+         * IchPixel Pro - Core Script
          */
 
-        // アプリケーション状態
         let isProUser = false;
         let currentTool = 'pen';
         let currentColor = '#000000';
         let paletteColors = ['#000000', '#FFFFFF', '#3381FF', '#FF3B30', '#34C759', '#FF9500', '#AF52DE'];
         let showGrid = true;
 
-        // ペン・消しゴム設定
         let penSize = 1;
         let eraserSize = 1;
         let penShape = 'square';
 
-        // キャンバス状態
         let canvasWidth = 32;
         let canvasHeight = 32;
         let transformScale = 1;
         let transformPanX = 0;
         let transformPanY = 0;
-        let transformRotation = 0;
 
-        // オーバーレイ
         let overlayImage = null;
         let overlayX = 0;
         let overlayY = 0;
 
-        // DB & エクスポート対話用ターゲット
         let dbInstance = null;
         let targetArtworkForExport = null;
+        let pendingDeleteArtwork = null;
+        let replacePickTarget = null; // 'from' | 'to' | null
 
-        // DOM参照
         const mainCanvas = document.getElementById('mainCanvas');
         const mainCtx = mainCanvas.getContext('2d', { willReadFrequently: true });
         const gridCanvas = document.getElementById('gridCanvas');
@@ -1108,7 +1162,7 @@
         const canvasContainer = document.getElementById('canvas-container');
         const workspace = document.getElementById('workspace');
 
-        // IndexedDB 初期化
+        /* ---------- IndexedDB ---------- */
         function initIndexedDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open('IchPixelDB', 1);
@@ -1126,48 +1180,47 @@
             });
         }
 
-        // サンプル作品生成
+        // サンプル作品は初回のみ生成（削除しても復活しない）
         async function seedSampleArtwork() {
             if (!dbInstance) return;
-            const tx = dbInstance.transaction('artworks', 'readonly');
-            const store = tx.objectStore('artworks');
-            const getReq = store.get('sample-germanyball');
-            
-            getReq.onsuccess = () => {
-                if (!getReq.result) {
-                    const img = new Image();
-                    img.crossOrigin = 'Anonymous';
-                    img.onload = () => {
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = 32;
-                        tempCanvas.height = 32;
-                        const tCtx = tempCanvas.getContext('2d');
-                        tCtx.drawImage(img, 0, 0, 32, 32);
-                        const dataUrl = tempCanvas.toDataURL();
-
-                        const sampleDoc = {
-                            id: 'sample-germanyball',
-                            title: 'ドイツボール (Sample)',
-                            width: 32,
-                            height: 32,
-                            dataUrl: dataUrl,
-                            updatedAt: Date.now()
-                        };
-
-                        const writeTx = dbInstance.transaction('artworks', 'readwrite');
-                        writeTx.objectStore('artworks').put(sampleDoc);
-                        writeTx.oncomplete = () => loadLibraryItems();
+            if (localStorage.getItem('ichpixel_sample_seeded') === '1') {
+                loadLibraryItems();
+                return;
+            }
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = () => {
+                try {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = 32;
+                    tempCanvas.height = 32;
+                    const tCtx = tempCanvas.getContext('2d');
+                    tCtx.drawImage(img, 0, 0, 32, 32);
+                    const sampleDoc = {
+                        id: 'sample-germanyball',
+                        title: 'ドイツボール (Sample)',
+                        width: 32,
+                        height: 32,
+                        dataUrl: tempCanvas.toDataURL(),
+                        updatedAt: Date.now()
                     };
-                    img.src = 'https://raw.githubusercontent.com/PolandBallHub-Operator/pbimagesPublic/refs/heads/main/newballs/germany/frontnormal.png';
-                } else {
+                    const writeTx = dbInstance.transaction('artworks', 'readwrite');
+                    writeTx.objectStore('artworks').put(sampleDoc);
+                    writeTx.oncomplete = () => {
+                        localStorage.setItem('ichpixel_sample_seeded', '1');
+                        loadLibraryItems();
+                    };
+                } catch (e) {
                     loadLibraryItems();
                 }
             };
+            img.onerror = () => loadLibraryItems();
+            img.src = 'https://raw.githubusercontent.com/PolandBallHub-Operator/pbimagesPublic/refs/heads/main/newballs/germany/frontnormal.png';
         }
 
+        /* ---------- Pro状態 ---------- */
         function checkPersistentProStatus() {
-            const saved = localStorage.getItem('ichpixel_pro_unlocked');
-            if (saved === 'true') {
+            if (localStorage.getItem('ichpixel_pro_unlocked') === 'true') {
                 isProUser = true;
             }
             updateProUIState();
@@ -1213,19 +1266,27 @@
             }
         }
 
+        /* ---------- スライダー共通 ---------- */
+        // ノブが常に見えるよう、塗り幅を「ノブ幅 + 残り幅 × 割合」で算出
+        function setSliderFill(fillEl, inputEl, value) {
+            const min = parseFloat(inputEl.min);
+            const max = parseFloat(inputEl.max);
+            const p = Math.min(Math.max((value - min) / (max - min), 0), 1);
+            fillEl.style.width = `calc(var(--ptz-slider-height) + (100% - var(--ptz-slider-height)) * ${p})`;
+        }
+
+        /* ---------- キャンバス ---------- */
         function createCanvas(w, h) {
             if ((w >= 2000 || h >= 2000) && !isProUser) {
                 showToast('2000x2000以上のキャンバス作成にはProが必要です');
                 openProCodeDialog();
                 return;
             }
-            canvasWidth = Math.min(w, 8000);
-            canvasHeight = Math.min(h, 8000);
+            canvasWidth = Math.max(1, Math.min(w, 8000));
+            canvasHeight = Math.max(1, Math.min(h, 8000));
 
             mainCanvas.width = canvasWidth;
             mainCanvas.height = canvasHeight;
-            gridCanvas.width = canvasWidth;
-            gridCanvas.height = canvasHeight;
             overlayCanvas.width = canvasWidth;
             overlayCanvas.height = canvasHeight;
 
@@ -1233,10 +1294,9 @@
             mainCtx.fillRect(0, 0, canvasWidth, canvasHeight);
 
             document.getElementById('canvas-size-indicator').textContent = `${canvasWidth} x ${canvasHeight} px`;
-            
-            drawGrid();
-            resetCanvasTransform();
+
             switchView('view-canvas');
+            resetCanvasTransform();
         }
 
         function checkProCanvasRequirement() {
@@ -1248,21 +1308,63 @@
             }
         }
 
+        /* ---------- ドット格子（画面解像度で描画） ---------- */
+        let gridRaf = 0;
         function drawGrid() {
-            gridCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            if (gridRaf) return;
+            gridRaf = requestAnimationFrame(() => {
+                gridRaf = 0;
+                renderGrid();
+            });
+        }
+
+        function renderGrid() {
+            const wsRect = workspace.getBoundingClientRect();
+            if (wsRect.width === 0 || wsRect.height === 0) return; // 非表示中
+            const dpr = window.devicePixelRatio || 1;
+            const w = Math.round(wsRect.width * dpr);
+            const h = Math.round(wsRect.height * dpr);
+            gridCanvas.width = w;   // 再設定でクリアされる
+            gridCanvas.height = h;
+            gridCtx.setTransform(1, 0, 0, 1, 0, 0);
+            gridCtx.clearRect(0, 0, w, h);
+
             if (!showGrid) return;
 
-            gridCtx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
-            gridCtx.lineWidth = 0.5;
+            const r = mainCanvas.getBoundingClientRect();
+            const cell = r.width / canvasWidth;
+            if (cell < 3) return; // 密すぎて見えない場合は描かない
 
+            const cellD = cell * dpr;
+            const ox = (r.left - wsRect.left) * dpr;
+            const oy = (r.top - wsRect.top) * dpr;
+            const rw = r.width * dpr;
+            const rh = r.height * dpr;
+
+            const yTop = Math.max(oy, 0);
+            const yBottom = Math.min(oy + rh, h);
+            const xLeft = Math.max(ox, 0);
+            const xRight = Math.min(ox + rw, w);
+            if (yBottom <= yTop || xRight <= xLeft) return;
+
+            gridCtx.strokeStyle = 'rgba(0, 0, 0, 0.22)';
+            gridCtx.lineWidth = 1;
             gridCtx.beginPath();
-            for (let x = 0; x <= canvasWidth; x++) {
-                gridCtx.moveTo(x, 0);
-                gridCtx.lineTo(x, canvasHeight);
+
+            const iStart = Math.max(0, Math.floor((0 - ox) / cellD));
+            const iEnd = Math.min(canvasWidth, Math.ceil((w - ox) / cellD));
+            for (let i = iStart; i <= iEnd; i++) {
+                const x = Math.round(ox + i * cellD) + 0.5;
+                gridCtx.moveTo(x, yTop);
+                gridCtx.lineTo(x, yBottom);
             }
-            for (let y = 0; y <= canvasHeight; y++) {
-                gridCtx.moveTo(0, y);
-                gridCtx.lineTo(canvasWidth, y);
+
+            const jStart = Math.max(0, Math.floor((0 - oy) / cellD));
+            const jEnd = Math.min(canvasHeight, Math.ceil((h - oy) / cellD));
+            for (let j = jStart; j <= jEnd; j++) {
+                const y = Math.round(oy + j * cellD) + 0.5;
+                gridCtx.moveTo(xLeft, y);
+                gridCtx.lineTo(xRight, y);
             }
             gridCtx.stroke();
         }
@@ -1271,39 +1373,34 @@
             showGrid = enabled;
             drawGrid();
         }
+        window.addEventListener('resize', drawGrid);
 
+        /* ---------- ビュー変換 ---------- */
         function resetCanvasTransform() {
-            transformScale = Math.min(300 / canvasWidth, 300 / canvasHeight);
-            if (transformScale < 0.5) transformScale = 0.5;
+            const ww = workspace.clientWidth || 340;
+            const wh = workspace.clientHeight || 380;
+            transformScale = Math.min((ww * 0.92) / canvasWidth, (wh * 0.92) / canvasHeight);
+            if (transformScale < 0.05) transformScale = 0.05;
             transformPanX = 0;
             transformPanY = 0;
-            transformRotation = 0;
             applyCanvasTransform();
-            syncZoomSliderUI();
         }
 
         function applyCanvasTransform() {
-            canvasContainer.style.transform = `translate(${transformPanX}px, ${transformPanY}px) scale(${transformScale}) rotate(${transformRotation}deg)`;
+            canvasContainer.style.transform = `translate(${transformPanX}px, ${transformPanY}px) scale(${transformScale})`;
             syncZoomSliderUI();
+            drawGrid();
         }
 
         function syncZoomSliderUI() {
             const zoomPercent = Math.round(transformScale * 100);
             const sliderInput = document.getElementById('zoom-slider-input');
             const sliderFill = document.getElementById('zoom-slider-fill');
-            const sliderValText = document.getElementById('zoom-slider-val');
-            const zoomText = document.getElementById('zoom-level-text');
 
-            if (sliderInput) sliderInput.value = zoomPercent;
-            if (zoomText) zoomText.textContent = `ズーム: ${zoomPercent}%`;
-            if (sliderValText) sliderValText.textContent = `拡大率: ${zoomPercent}%`;
-
-            if (sliderFill && sliderInput) {
-                const min = parseFloat(sliderInput.min) || 50;
-                const max = parseFloat(sliderInput.max) || 3000;
-                const percent = Math.min(Math.max(((zoomPercent - min) / (max - min)) * 100, 0), 100);
-                sliderFill.style.width = `${percent}%`;
-            }
+            sliderInput.value = zoomPercent;
+            document.getElementById('zoom-level-text').textContent = `ズーム: ${zoomPercent}%`;
+            document.getElementById('zoom-slider-val').textContent = `${zoomPercent}%`;
+            setSliderFill(sliderFill, sliderInput, zoomPercent);
         }
 
         function handleZoomSliderChange(val) {
@@ -1311,42 +1408,56 @@
             if (!isProUser && numVal > 2500) {
                 showToast('超高倍率ズーム（2500%〜）はPro限定です');
                 openProCodeDialog();
+                syncZoomSliderUI();
                 return;
             }
             transformScale = numVal / 100;
             applyCanvasTransform();
         }
 
+        /* ---------- 入力処理 ---------- */
         let isDrawing = false;
         let isPanning = false;
         let startPanX = 0, startPanY = 0;
+        let lastX = null, lastY = null;
 
         function getCanvasPixelCoords(e) {
             const rect = mainCanvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-            const scaleX = canvasWidth / rect.width;
-            const scaleY = canvasHeight / rect.height;
-
-            const x = Math.floor((clientX - rect.left) * scaleX);
-            const y = Math.floor((clientY - rect.top) * scaleY);
+            const x = Math.floor((clientX - rect.left) * (canvasWidth / rect.width));
+            const y = Math.floor((clientY - rect.top) * (canvasHeight / rect.height));
             return { x, y };
         }
 
+        function inCanvas(x, y) {
+            return x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight;
+        }
+
         function handlePointerDown(e) {
+            if (e.target.closest && e.target.closest('.pick-banner')) return;
+
             if (e.touches && e.touches.length > 1) {
                 isPanning = true;
+                isDrawing = false;
                 startPanX = e.touches[0].clientX - transformPanX;
                 startPanY = e.touches[0].clientY - transformPanY;
                 return;
             }
 
             const { x, y } = getCanvasPixelCoords(e);
-            if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
-                isDrawing = true;
-                applyTool(x, y);
+            if (!inCanvas(x, y)) return;
+
+            // 色一括置換用スポイト
+            if (replacePickTarget) {
+                finishReplacePick(x, y);
+                return;
             }
+
+            isDrawing = true;
+            lastX = x;
+            lastY = y;
+            applyTool(x, y);
         }
 
         function handlePointerMove(e) {
@@ -1356,29 +1467,38 @@
                 applyCanvasTransform();
                 return;
             }
-
             if (!isDrawing) return;
             const { x, y } = getCanvasPixelCoords(e);
-            if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
-                applyTool(x, y);
+
+            if (currentTool === 'pen' || currentTool === 'eraser') {
+                // 高速に動かしても途切れないよう線で補間
+                const size = currentTool === 'pen' ? penSize : eraserSize;
+                const color = currentTool === 'pen' ? currentColor : '#FFFFFF';
+                strokeLine(lastX, lastY, x, y, size, color, penShape);
+                lastX = x;
+                lastY = y;
+            } else if (inCanvas(x, y) && currentTool === 'bucket') {
+                // バケツはドラッグ連続実行しない
             }
         }
 
         function handlePointerUp() {
             isDrawing = false;
             isPanning = false;
+            lastX = null;
+            lastY = null;
         }
 
         workspace.addEventListener('wheel', (e) => {
             e.preventDefault();
             const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
             let newScale = transformScale * zoomFactor;
+            newScale = Math.max(0.05, newScale);
 
             if (!isProUser && newScale > 25) {
                 showToast('これ以上の拡大はPro限定です');
                 return;
             }
-
             transformScale = newScale;
             applyCanvasTransform();
         }, { passive: false });
@@ -1391,6 +1511,7 @@
         workspace.addEventListener('touchmove', handlePointerMove, { passive: true });
         workspace.addEventListener('touchend', handlePointerUp);
 
+        /* ---------- ツール ---------- */
         function setTool(tool) {
             currentTool = tool;
             document.querySelectorAll('.tool-bar .tool-btn').forEach(btn => btn.classList.remove('active'));
@@ -1412,23 +1533,13 @@
         function updatePenSize(val) {
             penSize = parseInt(val);
             document.getElementById('pen-size-display').textContent = `${penSize} px`;
-            document.getElementById('pen-size-text').textContent = `ペンサイズ: ${penSize} px`;
-
-            const fill = document.getElementById('pen-size-fill');
-            const input = document.getElementById('pen-size-input');
-            const percent = ((penSize - 1) / (parseInt(input.max) - 1)) * 100;
-            fill.style.width = `${percent}%`;
+            setSliderFill(document.getElementById('pen-size-fill'), document.getElementById('pen-size-input'), penSize);
         }
 
         function updateEraserSize(val) {
             eraserSize = parseInt(val);
             document.getElementById('eraser-size-display').textContent = `${eraserSize} px`;
-            document.getElementById('eraser-size-text').textContent = `消しゴムサイズ: ${eraserSize} px`;
-
-            const fill = document.getElementById('eraser-size-fill');
-            const input = document.getElementById('eraser-size-input');
-            const percent = ((eraserSize - 1) / (parseInt(input.max) - 1)) * 100;
-            fill.style.width = `${percent}%`;
+            setSliderFill(document.getElementById('eraser-size-fill'), document.getElementById('eraser-size-input'), eraserSize);
         }
 
         function setPenShape(shape) {
@@ -1437,48 +1548,72 @@
             document.getElementById('shape-circle').classList.toggle('active', shape === 'circle');
         }
 
-        function drawBrushStroke(cx, cy, size, color, shape) {
+        // 1回分のブラシ押し（太さ200でも軽いよう、行単位の矩形塗りで描画）
+        function stampBrush(cx, cy, size, color, shape) {
             mainCtx.fillStyle = color;
             const half = Math.floor((size - 1) / 2);
-            const startX = cx - half;
-            const startY = cy - half;
-            const radius = size / 2;
+            const sx = cx - half;
+            const sy = cy - half;
 
-            for (let i = 0; i < size; i++) {
-                for (let j = 0; j < size; j++) {
-                    const px = startX + i;
-                    const py = startY + j;
+            if (shape !== 'circle' || size <= 2) {
+                const x0 = Math.max(sx, 0);
+                const y0 = Math.max(sy, 0);
+                const x1 = Math.min(sx + size, canvasWidth);
+                const y1 = Math.min(sy + size, canvasHeight);
+                if (x1 > x0 && y1 > y0) mainCtx.fillRect(x0, y0, x1 - x0, y1 - y0);
+                return;
+            }
 
-                    if (px >= 0 && px < canvasWidth && py >= 0 && py < canvasHeight) {
-                        if (shape === 'circle' && size > 2) {
-                            const dx = i - half;
-                            const dy = j - half;
-                            if (dx * dx + dy * dy <= radius * radius) {
-                                mainCtx.fillRect(px, py, 1, 1);
-                            }
-                        } else {
-                            mainCtx.fillRect(px, py, 1, 1);
-                        }
-                    }
-                }
+            const r = size / 2;
+            const c = (size - 1) / 2;
+            for (let j = 0; j < size; j++) {
+                const py = sy + j;
+                if (py < 0 || py >= canvasHeight) continue;
+                const dy = j - c;
+                const d = r * r - dy * dy;
+                if (d < 0) continue;
+                const dx = Math.sqrt(d);
+                let px0 = sx + Math.ceil(c - dx);
+                let px1 = sx + Math.floor(c + dx);
+                px0 = Math.max(px0, 0);
+                px1 = Math.min(px1, canvasWidth - 1);
+                if (px1 >= px0) mainCtx.fillRect(px0, py, px1 - px0 + 1, 1);
+            }
+        }
+
+        function strokeLine(x0, y0, x1, y1, size, color, shape) {
+            const dx = x1 - x0;
+            const dy = y1 - y0;
+            const dist = Math.max(Math.abs(dx), Math.abs(dy));
+            const step = shape === 'circle'
+                ? Math.max(1, Math.floor(size / 6))
+                : Math.max(1, Math.floor(size / 2));
+            const n = Math.max(1, Math.ceil(dist / step));
+            for (let i = 0; i <= n; i++) {
+                const t = i / n;
+                stampBrush(Math.round(x0 + dx * t), Math.round(y0 + dy * t), size, color, shape);
             }
         }
 
         function applyTool(x, y) {
             if (currentTool === 'pen') {
-                drawBrushStroke(x, y, penSize, currentColor, penShape);
+                stampBrush(x, y, penSize, currentColor, penShape);
             } else if (currentTool === 'eraser') {
-                drawBrushStroke(x, y, eraserSize, '#FFFFFF', penShape);
+                stampBrush(x, y, eraserSize, '#FFFFFF', penShape);
             } else if (currentTool === 'bucket') {
                 floodFill(x, y, currentColor);
             } else if (currentTool === 'picker') {
-                const pixel = mainCtx.getImageData(x, y, 1, 1).data;
-                const hex = "#" + ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1);
+                const hex = readPixelHex(x, y);
                 currentColor = hex;
                 addColorToPalette(hex);
                 setTool('pen');
                 showToast(`色を取得しました: ${hex}`);
             }
+        }
+
+        function readPixelHex(x, y) {
+            const p = mainCtx.getImageData(x, y, 1, 1).data;
+            return "#" + ((1 << 24) + (p[0] << 16) + (p[1] << 8) + p[2]).toString(16).slice(1);
         }
 
         function floodFill(startX, startY, fillColor) {
@@ -1492,26 +1627,19 @@
             const startA = data[targetPos + 3];
 
             const fillRgb = hexToRgb(fillColor);
-            if (startR === fillRgb.r && startG === fillRgb.g && startB === fillRgb.b) return;
+            if (startR === fillRgb.r && startG === fillRgb.g && startB === fillRgb.b && startA === 255) return;
 
             const pixelStack = [[startX, startY]];
-
             while (pixelStack.length > 0) {
                 const [x, y] = pixelStack.pop();
+                if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasHeight) continue;
                 const pos = (y * canvasWidth + x) * 4;
-
-                if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasHeight) {
-                    if (data[pos] === startR && data[pos + 1] === startG && data[pos + 2] === startB && data[pos + 3] === startA) {
-                        data[pos] = fillRgb.r;
-                        data[pos + 1] = fillRgb.g;
-                        data[pos + 2] = fillRgb.b;
-                        data[pos + 3] = 255;
-
-                        pixelStack.push([x + 1, y]);
-                        pixelStack.push([x - 1, y]);
-                        pixelStack.push([x, y + 1]);
-                        pixelStack.push([x, y - 1]);
-                    }
+                if (data[pos] === startR && data[pos + 1] === startG && data[pos + 2] === startB && data[pos + 3] === startA) {
+                    data[pos] = fillRgb.r;
+                    data[pos + 1] = fillRgb.g;
+                    data[pos + 2] = fillRgb.b;
+                    data[pos + 3] = 255;
+                    pixelStack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
                 }
             }
             mainCtx.putImageData(imgData, 0, 0);
@@ -1524,6 +1652,7 @@
             return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
         }
 
+        /* ---------- パレット ---------- */
         function renderPalette() {
             const container = document.getElementById('palette-list');
             container.innerHTML = '';
@@ -1531,6 +1660,7 @@
                 const swatch = document.createElement('div');
                 swatch.className = `color-swatch ${color === currentColor ? 'active' : ''}`;
                 swatch.style.backgroundColor = color;
+                if (color.toUpperCase() === '#FFFFFF') swatch.style.boxShadow = 'inset 0 0 0 1px rgba(128,128,128,0.4)';
                 swatch.onclick = () => {
                     currentColor = color;
                     renderPalette();
@@ -1552,22 +1682,15 @@
             renderPalette();
         }
 
-        /* --- フリーユーザー向けダイレクトキャンバスダウンロード --- */
+        /* ---------- ダウンロード ---------- */
         function downloadCanvasDirectly() {
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvasWidth;
-            tempCanvas.height = canvasHeight;
-            const ctx = tempCanvas.getContext('2d');
-            ctx.drawImage(mainCanvas, 0, 0);
-
             const link = document.createElement('a');
             link.download = `ichpixel-art-${canvasWidth}x${canvasHeight}-${Date.now()}.png`;
-            link.href = tempCanvas.toDataURL('image/png');
+            link.href = mainCanvas.toDataURL('image/png');
             link.click();
             showToast('画像をダウンロードしました！');
         }
 
-        /* --- プロユーザー向け解像度・倍率指定エクスポート --- */
         function openProDownloadDialogForArtwork(artwork) {
             if (!isProUser) {
                 showToast('ライブラリからのプロ高画質ダウンロードはPro限定です');
@@ -1581,12 +1704,7 @@
         }
 
         function onExportScaleChange(val) {
-            const customBox = document.getElementById('export-custom-size-box');
-            if (val === 'custom') {
-                customBox.style.display = 'flex';
-            } else {
-                customBox.style.display = 'none';
-            }
+            document.getElementById('export-custom-size-box').style.display = val === 'custom' ? 'flex' : 'none';
         }
 
         function executeProDownload() {
@@ -1604,8 +1722,8 @@
                 exportH = parseInt(document.getElementById('export-custom-h').value) || exportH;
             } else {
                 const mult = parseInt(scaleVal) || 1;
-                exportW = exportW * mult;
-                exportH = exportH * mult;
+                exportW *= mult;
+                exportH *= mult;
             }
 
             const img = new Image();
@@ -1614,21 +1732,12 @@
                 exportCanvas.width = exportW;
                 exportCanvas.height = exportH;
                 const eCtx = exportCanvas.getContext('2d');
-
-                if (smoothingVal === 'pixelated') {
-                    eCtx.imageSmoothingEnabled = false;
-                    eCtx.mozImageSmoothingEnabled = false;
-                    eCtx.webkitImageSmoothingEnabled = false;
-                    eCtx.msImageSmoothingEnabled = false;
-                } else {
-                    eCtx.imageSmoothingEnabled = true;
-                }
+                eCtx.imageSmoothingEnabled = smoothingVal !== 'pixelated';
 
                 if (formatVal === 'image/jpeg') {
                     eCtx.fillStyle = '#FFFFFF';
                     eCtx.fillRect(0, 0, exportW, exportH);
                 }
-
                 eCtx.drawImage(img, 0, 0, exportW, exportH);
 
                 const ext = formatVal === 'image/jpeg' ? 'jpg' : 'png';
@@ -1643,6 +1752,7 @@
             img.src = targetArtworkForExport.dataUrl;
         }
 
+        /* ---------- 色一括置換 + スポイト ---------- */
         function triggerColorReplace() {
             if (!isProUser) {
                 showToast('色の一括置換機能はPro限定です');
@@ -1652,29 +1762,53 @@
             openDialog('color-replace-dialog');
         }
 
-        function executeColorReplace() {
-            const fromHex = document.getElementById('replace-from-color').value;
-            const toHex = document.getElementById('replace-to-color').value;
+        function startReplacePick(target) {
+            replacePickTarget = target;
+            closeDialog('color-replace-dialog');
+            document.getElementById('pick-banner-text').textContent =
+                target === 'from' ? '変更前にする色をタップ' : '変更後にする色をタップ';
+            document.getElementById('pick-banner').classList.add('active');
+        }
 
-            const fromRgb = hexToRgb(fromHex);
-            const toRgb = hexToRgb(toHex);
+        function finishReplacePick(x, y) {
+            const hex = readPixelHex(x, y);
+            const inputId = replacePickTarget === 'from' ? 'replace-from-color' : 'replace-to-color';
+            document.getElementById(inputId).value = hex;
+            replacePickTarget = null;
+            document.getElementById('pick-banner').classList.remove('active');
+            openDialog('color-replace-dialog');
+            showToast(`色を取得しました: ${hex}`);
+        }
+
+        function cancelReplacePick() {
+            replacePickTarget = null;
+            document.getElementById('pick-banner').classList.remove('active');
+            openDialog('color-replace-dialog');
+        }
+
+        function executeColorReplace() {
+            const fromRgb = hexToRgb(document.getElementById('replace-from-color').value);
+            const toRgb = hexToRgb(document.getElementById('replace-to-color').value);
 
             const imgData = mainCtx.getImageData(0, 0, canvasWidth, canvasHeight);
             const data = imgData.data;
+            let count = 0;
 
             for (let i = 0; i < data.length; i += 4) {
                 if (data[i] === fromRgb.r && data[i + 1] === fromRgb.g && data[i + 2] === fromRgb.b) {
                     data[i] = toRgb.r;
                     data[i + 1] = toRgb.g;
                     data[i + 2] = toRgb.b;
+                    count++;
                 }
             }
 
             mainCtx.putImageData(imgData, 0, 0);
             closeDialog('color-replace-dialog');
-            showToast('指定色を一括置換しました');
+            showToast(count > 0 ? `${count} ピクセルを置換しました` : '該当する色が見つかりませんでした');
         }
 
+        /* ---------- インポート ---------- */
         let importTypeMode = 'resize';
 
         function triggerImageImport(mode) {
@@ -1706,6 +1840,7 @@
                 img.src = evt.target.result;
             };
             reader.readAsDataURL(file);
+            e.target.value = '';
         }
 
         function triggerOverlayImageImport() {
@@ -1729,35 +1864,38 @@
                     overlayX = Math.floor((canvasWidth - img.width) / 2);
                     overlayY = Math.floor((canvasHeight - img.height) / 2);
                     drawOverlay();
-                    showToast('重ね配置画像を読み込み、結合しました');
                     mainCtx.drawImage(overlayImage, 0, 0, canvasWidth, canvasHeight);
+                    showToast('重ね配置画像を読み込み、結合しました');
                 };
                 img.src = evt.target.result;
             };
             reader.readAsDataURL(file);
+            e.target.value = '';
         }
 
         function drawOverlay() {
             overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-            if (overlayImage) {
-                overlayCtx.drawImage(overlayImage, overlayX, overlayY);
-            }
+            if (overlayImage) overlayCtx.drawImage(overlayImage, overlayX, overlayY);
         }
 
+        /* ---------- ライブラリ ---------- */
         function saveCurrentCanvasToLibrary() {
             if (!isProUser) {
                 showToast('ライブラリへの作品保存にはPro権限が必要です');
                 openProCodeDialog();
                 return;
             }
+            if (!dbInstance) {
+                showToast('ストレージが利用できません');
+                return;
+            }
 
-            const dataUrl = mainCanvas.toDataURL();
             const artwork = {
                 id: 'art-' + Date.now(),
                 title: `作品 (${canvasWidth}x${canvasHeight})`,
                 width: canvasWidth,
                 height: canvasHeight,
-                dataUrl: dataUrl,
+                dataUrl: mainCanvas.toDataURL(),
                 updatedAt: Date.now()
             };
 
@@ -1773,37 +1911,84 @@
             if (!dbInstance || !isProUser) return;
 
             const container = document.getElementById('library-items-container');
-            container.innerHTML = '';
-
-            const tx = dbInstance.transaction('artworks', 'readonly');
-            const store = tx.objectStore('artworks');
-            const req = store.getAll();
+            const req = dbInstance.transaction('artworks', 'readonly').objectStore('artworks').getAll();
 
             req.onsuccess = () => {
-                const items = req.result;
-                items.sort((a, b) => b.updatedAt - a.updatedAt);
+                const items = req.result.sort((a, b) => b.updatedAt - a.updatedAt);
+                container.innerHTML = '';
+
+                if (items.length === 0) {
+                    const empty = document.createElement('p');
+                    empty.style.gridColumn = '1 / -1';
+                    empty.style.textAlign = 'center';
+                    empty.style.padding = '24px 0';
+                    empty.textContent = '保存された作品はまだありません。';
+                    container.appendChild(empty);
+                    return;
+                }
 
                 items.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'library-card';
 
-                    card.innerHTML = `
-                        <img src="${item.dataUrl}" class="library-preview" alt="${item.title}">
-                        <div class="library-title">${item.title}</div>
-                        <div class="library-actions">
-                            <button class="ai-btn ai-btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" id="load-btn-${item.id}">編集</button>
-                            <button class="ai-btn" style="flex: 1; padding: 6px; font-size: 11px;" id="dl-btn-${item.id}">Pro保存</button>
-                        </div>
-                    `;
+                    const preview = document.createElement('img');
+                    preview.className = 'library-preview';
+                    preview.src = item.dataUrl;
+                    preview.alt = item.title;
+                    preview.onclick = () => loadArtworkFromLibrary(item);
 
+                    const title = document.createElement('div');
+                    title.className = 'library-title';
+                    title.textContent = item.title;
+
+                    const actions = document.createElement('div');
+                    actions.className = 'library-actions';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'ai-btn ai-btn-secondary';
+                    editBtn.style.cssText = 'flex: 1; padding: 6px; font-size: 11px;';
+                    editBtn.textContent = '編集';
+                    editBtn.onclick = () => loadArtworkFromLibrary(item);
+
+                    const dlBtn = document.createElement('button');
+                    dlBtn.className = 'ai-btn';
+                    dlBtn.style.cssText = 'flex: 1; padding: 6px; font-size: 11px;';
+                    dlBtn.textContent = 'Pro保存';
+                    dlBtn.onclick = () => openProDownloadDialogForArtwork(item);
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'ai-btn ai-btn-danger';
+                    delBtn.style.cssText = 'padding: 6px 8px;';
+                    delBtn.title = '削除';
+                    delBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px;">delete</span>';
+                    delBtn.onclick = () => requestDeleteArtwork(item);
+
+                    actions.append(editBtn, dlBtn, delBtn);
+                    card.append(preview, title, actions);
                     container.appendChild(card);
-
-                    // イベントリスナーの割り当て
-                    card.querySelector('.library-preview').onclick = () => loadArtworkFromLibrary(item);
-                    document.getElementById(`load-btn-${item.id}`).onclick = () => loadArtworkFromLibrary(item);
-                    document.getElementById(`dl-btn-${item.id}`).onclick = () => openProDownloadDialogForArtwork(item);
                 });
             };
+        }
+
+        function requestDeleteArtwork(item) {
+            pendingDeleteArtwork = item;
+            document.getElementById('delete-confirm-text').textContent =
+                `「${item.title}」をライブラリから削除します。元に戻せません。`;
+            openDialog('delete-confirm-dialog');
+        }
+
+        function confirmDeleteArtwork() {
+            if (!pendingDeleteArtwork || !dbInstance) return;
+            const id = pendingDeleteArtwork.id;
+            const tx = dbInstance.transaction('artworks', 'readwrite');
+            tx.objectStore('artworks').delete(id);
+            tx.oncomplete = () => {
+                pendingDeleteArtwork = null;
+                closeDialog('delete-confirm-dialog');
+                showToast('作品を削除しました');
+                loadLibraryItems();
+            };
+            tx.onerror = () => showToast('削除に失敗しました');
         }
 
         function loadArtworkFromLibrary(item) {
@@ -1816,21 +2001,19 @@
             img.src = item.dataUrl;
         }
 
+        /* ---------- ナビゲーション/ダイアログ ---------- */
         function switchView(viewId) {
             document.querySelectorAll('.nav-item').forEach(n => {
-                n.classList.remove('active');
-                if (n.getAttribute('data-view') === viewId) n.classList.add('active');
+                n.classList.toggle('active', n.getAttribute('data-view') === viewId);
             });
-
             document.querySelectorAll('.view').forEach(v => {
-                v.classList.remove('active');
-                if (v.id === viewId) v.classList.add('active');
+                v.classList.toggle('active', v.id === viewId);
             });
+            if (viewId === 'view-canvas') drawGrid();
         }
 
         function openProCodeDialog() { openDialog('pro-code-dialog'); }
         function openNewCanvasDialog() { openDialog('new-canvas-dialog'); }
-
         function openDialog(id) { document.getElementById(id).classList.add('active'); }
         function closeDialog(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -1845,35 +2028,94 @@
             const toast = document.getElementById('toast-message');
             toast.textContent = msg;
             toast.classList.add('active');
-            setTimeout(() => {
-                toast.classList.remove('active');
-            }, 2400);
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(() => toast.classList.remove('active'), 2400);
         }
 
-        // テーマ切り替え
+        /* ---------- テーマ ---------- */
         const themeBtn = document.getElementById('theme-btn');
-        themeBtn.addEventListener('click', () => {
-            const isDark = document.body.classList.toggle('dark-mode');
+        function setTheme(isDark) {
+            document.body.classList.toggle('dark-mode', isDark);
             themeBtn.querySelector('span').textContent = isDark ? 'dark_mode' : 'light_mode';
+        }
+        setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+        themeBtn.addEventListener('click', () => {
+            setTheme(!document.body.classList.contains('dark-mode'));
         });
 
-        // 触感スクイッシュエフェクト
-        document.addEventListener('mousedown', (e) => {
-            const target = e.target.closest('.glass-card, .ai-btn, .nav-item, .tool-btn');
-            if (target) {
-                target.classList.remove('squish-active');
-                void target.offsetWidth;
-                target.classList.add('squish-active');
-                setTimeout(() => target.classList.remove('squish-active'), 350);
+        /* ---------- 弾性オーバースクロール（HyperUI） ---------- */
+        const scrollArea = document.getElementById('main-scroll-area');
+        const overscrollWrapper = document.getElementById('overscroll-wrapper');
+
+        let startY = 0;
+        let currentPull = 0;
+        let isPulling = false;
+        let touchStartedInWorkspace = false;
+
+        scrollArea.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                startY = e.touches[0].clientY;
+                touchStartedInWorkspace = !!e.target.closest('#workspace');
+                overscrollWrapper.classList.remove('spring-back');
             }
+        }, { passive: true });
+
+        scrollArea.addEventListener('touchmove', (e) => {
+            if (e.touches.length !== 1 || touchStartedInWorkspace) return;
+            const deltaY = e.touches[0].clientY - startY;
+            const isAtTop = scrollArea.scrollTop <= 0;
+            const isAtBottom = Math.abs(scrollArea.scrollHeight - scrollArea.clientHeight - scrollArea.scrollTop) < 2;
+
+            if ((isAtTop && deltaY > 0) || (isAtBottom && deltaY < 0)) {
+                currentPull = deltaY * 0.38;
+                overscrollWrapper.style.transform = `translateY(${currentPull}px) scaleY(${1 + Math.abs(currentPull) * 0.0003})`;
+                isPulling = true;
+            }
+        }, { passive: true });
+
+        scrollArea.addEventListener('touchend', () => {
+            if (isPulling) {
+                overscrollWrapper.classList.add('spring-back');
+                overscrollWrapper.style.transform = 'translateY(0px) scaleY(1)';
+                currentPull = 0;
+                isPulling = false;
+            }
+            touchStartedInWorkspace = false;
         });
 
+        let wheelTimer = null;
+        let wheelDeltaSum = 0;
+
+        scrollArea.addEventListener('wheel', (e) => {
+            if (e.target.closest('#workspace')) return; // キャンバス上はズーム優先
+            const isAtTop = scrollArea.scrollTop <= 0;
+            const isAtBottom = Math.abs(scrollArea.scrollHeight - scrollArea.clientHeight - scrollArea.scrollTop) < 2;
+
+            if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+                wheelDeltaSum -= e.deltaY * 0.25;
+                wheelDeltaSum = Math.max(-60, Math.min(60, wheelDeltaSum));
+
+                overscrollWrapper.classList.remove('spring-back');
+                overscrollWrapper.style.transform = `translateY(${wheelDeltaSum}px)`;
+
+                clearTimeout(wheelTimer);
+                wheelTimer = setTimeout(() => {
+                    overscrollWrapper.classList.add('spring-back');
+                    overscrollWrapper.style.transform = 'translateY(0px)';
+                    wheelDeltaSum = 0;
+                }, 120);
+            }
+        }, { passive: true });
+
+        /* ---------- 初期化 ---------- */
         window.onload = async () => {
             checkPersistentProStatus();
             renderPalette();
             updatePenSize(1);
             updateEraserSize(1);
+            setTool('pen');
             createCanvas(32, 32);
+            switchView('view-home');
 
             try {
                 await initIndexedDB();
